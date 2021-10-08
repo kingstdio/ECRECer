@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+#exclude tempfile
+tmp/
+
+._.DS_Store
+.DS_Store
