@@ -2,7 +2,7 @@
 DATADIR = r'''/home/shizhenkun/codebase/DMLF/data/'''
 RESULTSDIR = r'''/home/shizhenkun/codebase/BioUniprot/data/benchmark/results/'''
 MODELDIR = r'''/home/shizhenkun/codebase/BioUniprot/data/benchmark/model'''
-TEMPDIR =r'''/home/shizhenkun/codebase/BioUniprot/data/benchmark/tmp/'''
+TEMPDIR =r'''/home/shizhenkun/codebase/DMLF/tmp/'''
 
 
 TRAIN_FEATURE = DATADIR+'train.feather'
