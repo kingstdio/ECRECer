@@ -3,10 +3,9 @@ from random import sample
 import pandas as pd
 import numpy as np
 from sklearn import metrics
-from tools import ucTools
 from pandas._config.config import reset_option
 import benchmark_common as bcommon
-import benchmark_config as cfg
+import config as cfg
 
 
 #region 加载各种算法的预测结果，并拼合成一个大表格

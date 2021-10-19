@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-import benchmark_config as cfg
+import config as cfg
 
 
 #region 准备Slice使用的文件

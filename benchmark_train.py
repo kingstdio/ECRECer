@@ -1,13 +1,13 @@
 from json import load
 from pickle import FALSE
-from tasks.task1.function import table2fasta
+from tools.funclib import table2fasta
 import pandas as pd
 import numpy as np
 import joblib
 from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
 import benchmark_common as bcommon
-import benchmark_config as cfg
+import config as cfg
 import os
 
 #region 获取酶训练的数据集

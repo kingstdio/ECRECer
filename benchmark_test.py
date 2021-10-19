@@ -4,7 +4,7 @@ import numpy as np
 import joblib
 import os
 import benchmark_common as bcommon
-import benchmark_config as cfg
+import config as cfg
 
 # region 获取「酶｜非酶」预测结果
 def get_isEnzymeRes(querydata, model_file):
