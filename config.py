@@ -1,7 +1,7 @@
 # 1. 定义数据目录
 DATADIR = r'''/home/shizhenkun/codebase/DMLF/data/'''
 RESULTSDIR = r'''/home/shizhenkun/codebase/BioUniprot/data/benchmark/results/'''
-MODELDIR = r'''/home/shizhenkun/codebase/BioUniprot/data/benchmark/model'''
+MODELDIR = r'''/home/shizhenkun/codebase/DMLF/model'''
 TEMPDIR =r'''/home/shizhenkun/codebase/DMLF/tmp/'''
 
 

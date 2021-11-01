@@ -132,6 +132,7 @@ dmypy.json
 #exclude tempfile
 tmp/
 data/
+baselines/
 
 ._.DS_Store
 .DS_Store

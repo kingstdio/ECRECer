@@ -67,10 +67,11 @@ def dna_onehot(Xdna):
 
 def lrmain(X_train_std, Y_train, X_test_std, Y_test, type='binary'):
     logreg = linear_model.LogisticRegression(
-                                            solver = 'liblinear',
+                                            solver = 'saga',
                                             multi_class='auto',
                                             verbose=False,
-                                            max_iter=100
+                                            n_jobs=-1,
+                                            max_iter=10000
                                         )
     # sc = StandardScaler()
     # X_train_std = sc.fit_transform(X_train_std)
@@ -78,7 +79,7 @@ def lrmain(X_train_std, Y_train, X_test_std, Y_test, type='binary'):
     predict = logreg.predict(X_test_std)
     lrpredpro = logreg.predict_proba(X_test_std)
     groundtruth = Y_test
-    return groundtruth, predict, lrpredpro
+    return groundtruth, predict, lrpredpro, logreg
 
 def knnmain(X_train_std, Y_train, X_test_std, Y_test, type='binary'):
     knn=KNeighborsClassifier(n_neighbors=5, n_jobs=-2)
@@ -86,7 +87,7 @@ def knnmain(X_train_std, Y_train, X_test_std, Y_test, type='binary'):
     predict = knn.predict(X_test_std)
     lrpredpro = knn.predict_proba(X_test_std)
     groundtruth = Y_test
-    return groundtruth, predict, lrpredpro
+    return groundtruth, predict, lrpredpro, knn
 
 def svmmain(X_train_std, Y_train, X_test_std, Y_test):
     svcmodel = SVC(probability=True, kernel='rbf', tol=0.001)
@@ -94,7 +95,7 @@ def svmmain(X_train_std, Y_train, X_test_std, Y_test):
     predict = svcmodel.predict(X_test_std)
     predictprob =svcmodel.predict_proba(X_test_std)
     groundtruth = Y_test
-    return groundtruth, predict, predictprob
+    return groundtruth, predict, predictprob,svcmodel
 
 def xgmain(X_train_std, Y_train, X_test_std, Y_test, type='binary'):
 
@@ -127,7 +128,7 @@ def xgmain(X_train_std, Y_train, X_test_std, Y_test, type='binary'):
     predict = model.predict(X_test_std)
     predictprob = model.predict_proba(X_test_std)
     groundtruth = Y_test
-    return groundtruth, predict, predictprob
+    return groundtruth, predict, predictprob, model
 
 def dtmain(X_train_std, Y_train, X_test_std, Y_test):
     model = tree.DecisionTreeClassifier()
@@ -135,7 +136,7 @@ def dtmain(X_train_std, Y_train, X_test_std, Y_test):
     predict = model.predict(X_test_std)
     predictprob = model.predict_proba(X_test_std)
     groundtruth = Y_test
-    return groundtruth, predict, predictprob
+    return groundtruth, predict, predictprob,model
 
 def rfmain(X_train_std, Y_train, X_test_std, Y_test):
     model = RandomForestClassifier(oob_score=True, random_state=10, n_jobs=-2)
@@ -143,7 +144,7 @@ def rfmain(X_train_std, Y_train, X_test_std, Y_test):
     predict = model.predict(X_test_std)
     predictprob = model.predict_proba(X_test_std)
     groundtruth = Y_test
-    return groundtruth, predict, predictprob
+    return groundtruth, predict, predictprob,model
 
 def gbdtmain(X_train_std, Y_train, X_test_std, Y_test):
     model = GradientBoostingClassifier(random_state=10)
@@ -151,7 +152,7 @@ def gbdtmain(X_train_std, Y_train, X_test_std, Y_test):
     predict = model.predict(X_test_std)
     predictprob = model.predict_proba(X_test_std)
     groundtruth = Y_test
-    return groundtruth, predict, predictprob
+    return groundtruth, predict, predictprob, model
     
 
 def caculateMetrix(groundtruth, predict, baselineName, type='binary'):
@@ -174,19 +175,19 @@ def caculateMetrix(groundtruth, predict, baselineName, type='binary'):
 def evaluate(baslineName, X_train_std, Y_train, X_test_std, Y_test, type='binary'):
 
     if baslineName == 'lr':
-        groundtruth, predict, predictprob = lrmain (X_train_std, Y_train, X_test_std, Y_test, type=type)
+        groundtruth, predict, predictprob, model = lrmain (X_train_std, Y_train, X_test_std, Y_test, type=type)
     elif baslineName == 'svm':
-        groundtruth, predict, predictprob = svmmain(X_train_std, Y_train, X_test_std, Y_test)
+        groundtruth, predict, predictprob, model = svmmain(X_train_std, Y_train, X_test_std, Y_test)
     elif baslineName =='xg':
-        groundtruth, predict, predictprob = xgmain(X_train_std, Y_train, X_test_std, Y_test, type=type)
+        groundtruth, predict, predictprob, model = xgmain(X_train_std, Y_train, X_test_std, Y_test, type=type)
     elif baslineName =='dt':
-        groundtruth, predict, predictprob = dtmain(X_train_std, Y_train, X_test_std, Y_test)
+        groundtruth, predict, predictprob, model = dtmain(X_train_std, Y_train, X_test_std, Y_test)
     elif baslineName =='rf':
-        groundtruth, predict, predictprob = rfmain(X_train_std, Y_train, X_test_std, Y_test)
+        groundtruth, predict, predictprob, model = rfmain(X_train_std, Y_train, X_test_std, Y_test)
     elif baslineName =='gbdt':
-        groundtruth, predict, predictprob = gbdtmain(X_train_std, Y_train, X_test_std, Y_test)
+        groundtruth, predict, predictprob, model = gbdtmain(X_train_std, Y_train, X_test_std, Y_test)
     elif baslineName =='knn':
-        groundtruth, predict, predictprob = knnmain(X_train_std, Y_train, X_test_std, Y_test)
+        groundtruth, predict, predictprob, model = knnmain(X_train_std, Y_train, X_test_std, Y_test, type=type)
     else:
         print('Baseline Name Errror')
 
@@ -241,7 +242,7 @@ def getblast(train, test):
     table2fasta(test, '/tmp/test.fasta')
     
     cmd1 = r'diamond makedb --in /tmp/train.fasta -d /tmp/train.dmnd'
-    cmd2 = r'diamond blastp -d /tmp/train.dmnd  -q  /tmp/test.fasta -o /tmp/test_fasta_results.tsv -b5 -c1 -k 1'
+    cmd2 = r'diamond blastp -d /tmp/train.dmnd  -q  /tmp/test.fasta -o /tmp/test_fasta_results.tsv -b5 -c1 -k 1 --quiet'
     cmd3 = r'rm -rf /tmp/*.fasta /tmp/*.dmnd /tmp/*.tsv'
     print(cmd1)
     os.system(cmd1)
