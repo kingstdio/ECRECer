@@ -133,6 +133,7 @@ dmypy.json
 tmp/
 data/
 baselines/
+results/
 
 ._.DS_Store
 .DS_Store
