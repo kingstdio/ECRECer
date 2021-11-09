@@ -5,6 +5,7 @@ import joblib
 import os
 import benchmark_common as bcommon
 import config as cfg
+from Bio import SeqIO
 
 # region 获取「酶｜非酶」预测结果
 def get_isEnzymeRes(querydata, model_file):

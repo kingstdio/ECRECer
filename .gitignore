@@ -137,4 +137,8 @@ results/
 
 ._.DS_Store
 .DS_Store
+*.gz
+model/
+*.model
 
+model/single_multi.model

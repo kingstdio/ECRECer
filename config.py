@@ -1,20 +1,31 @@
 # 1. 定义数据目录
-DATADIR = r'''/home/shizhenkun/codebase/DMLF/data/'''
-RESULTSDIR = r'''/home/shizhenkun/codebase/BioUniprot/data/benchmark/results/'''
-MODELDIR = r'''/home/shizhenkun/codebase/DMLF/model'''
-TEMPDIR =r'''/home/shizhenkun/codebase/DMLF/tmp/'''
+ROOTDIR= r'''/home/shizhenkun/codebase/DMLF/'''
+DATADIR = ROOTDIR +'data/'
+RESULTSDIR = ROOTDIR +'results/'
+MODELDIR = ROOTDIR +'model'
+TEMPDIR =ROOTDIR +'tmp/'
+
 
 
 TRAIN_FEATURE = DATADIR+'train.feather'
 TEST_FEATURE = DATADIR+'test.feather'
 TRAIN_FASTA = DATADIR+'train.fasta'
 TEST_FASTA = DATADIR+'test.fasta'
+
+FILE_LATEST_SPROT = DATADIR + 'uniprot_sprot_latest.dat.gz'
+FILE_LATEST_TREMBL = DATADIR + 'uniprot_trembl_latest.dat.gz'
+
+FILE_LATEST_SPROT_FEATHER = DATADIR + 'latest_sport.feather'
+FILE_LATEST_TREMBL_FEATHER = DATADIR + 'latest_trembl.feather'
+
 FILE_SLICE_TRAINX = DATADIR + 'slice_train_x.txt'
 FILE_SLICE_TRAINY  = DATADIR + 'slice_train_y.txt'
 FILE_SLICE_TESTX = DATADIR + 'slice_test_x.txt'
 FILE_SLICE_TESTY  = DATADIR + 'slice_test_y.txt'
 FILE_EC_LABEL_DICT = DATADIR + 'ec_label_dict.npy'
 FILE_BLAST_TRAIN_DB = DATADIR + 'train_blast.dmnd' # blast比对数据库
+FILE_BLAST_PRODUCTION_DB = DATADIR + 'production_blast.dmnd' # 生产环境比对数据库
+FILE_BLAST_PRODUCTION_FASTA = DATADIR + 'production_blast.fasta' # 生产环境比对数据库
 FILE_TRANSFER_DICT = DATADIR + 'ec_transfer_dict.npy'
 
 

@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import normalize
@@ -12,7 +13,7 @@ from sklearn.neighbors import KNeighborsClassifier
 import xgboost
 from xgboost import XGBClassifier
 from tqdm import tqdm
-
+from Bio import SeqIO
 import joblib
 
 import pandas as pd
@@ -252,6 +253,17 @@ def getblast(train, test):
     os.system(cmd3)
     return res_data
 
+def getblast_usedb(db, test):
+    table2fasta(test, '/tmp/test.fasta')
+    cmd2 = r'diamond blastp -d {0}  -q  /tmp/test.fasta -o /tmp/test_fasta_results.tsv -b5 -c1 -k 1 --quiet'.format(db)
+    cmd3 = r'rm -rf /tmp/*.fasta /tmp/*.dmnd /tmp/*.tsv'
+
+    print(cmd2)
+    os.system(cmd2)
+    res_data = pd.read_csv('/tmp/test_fasta_results.tsv', sep='\t', names=['id', 'sseqid', 'pident', 'length','mismatch','gapopen','qstart','qend','sstart','send','evalue','bitscore'])
+    os.system(cmd3)
+    return res_data
+
 def getblast_fasta(trainfasta, testfasta):
     
     cmd1 = r'diamond makedb --in {0} -d /tmp/train.dmnd --quiet'.format(trainfasta)
@@ -376,23 +388,56 @@ def split_ecdf_to_single_lines(full_table):
     并 2. 将酶号拓展为4位的标准格式
     Returns: 展开后的EC列表，每个EC号一行
     """
-    resDf = pd.DataFrame(columns=full_table.columns.values)
-    for index, row in tqdm(full_table.iterrows()):
-        if row.ec_number.strip()=='-':   #若是非酶直接返回
-            row.ec_number='-'
-            row.ec_number = row.ec_number.strip()
-            resDf = resDf.append(row, ignore_index=True)
-        else:
-            ecs = row.ec_number.split(',') #拆解多功能酶
-            for ec in ecs:
-                ec = ec.strip()
-                ecarray=ec.split('.') #拆解每一位
-                if ecarray[3] == '':  #若是最后一位是空，补足_
-                    ec=ec+'-'
-                row.ec_number = ec.strip()
-                resDf = resDf.append(row, ignore_index=True)
-    return resDf
+    listres=full_table.parallel_apply(lambda x: split_ecdf_to_single_lines_pr_record(x)  , axis=1)
+    temp_li = []
+    for res in tqdm(listres):
+        for j in res:
+            temp_li = temp_li + [j]
+    resDf = pd.DataFrame(temp_li,columns=full_table.columns.values)
 
+    return resDf
 #endregion
 
+
+def split_ecdf_to_single_lines_pr_record(row):
+    resDf = []
+
+    if row.ec_number.strip()=='-':   #若是非酶直接返回
+            row.ec_number='-'
+            row.ec_number = row.ec_number.strip()
+            resDf = row.values
+            return [[row.id, row.seq, row.ec_number]]
+    else:
+        ecs = row.ec_number.split(',') #拆解多功能酶
+        if len(ecs) ==1:               # 单功能酶直接返回
+            return [[row.id, row.seq, row.ec_number]]
+        for ec in ecs:
+            ec = ec.strip()
+            ecarray=ec.split('.') #拆解每一位
+            if ecarray[3] == '':  #若是最后一位是空，补足_
+                ec=ec+'-'
+            row.ec_number = ec.strip()
+            resDf = resDf + [[row.id, row.seq, ec]]
+    return  resDf
+
+
+
+def load_fasta_to_table(file):
+    """[Load fasta file to DataFrame]
+
+    Args:
+        file ([string]): [fasta file location]
+
+    Returns:
+        [DataFrame]: [loaded fasta in DF format]
+    """
+    if os.path.exists(file) == False:
+        print('file not found:{0}'.format(file))
+        return nullcontext
+
+    input_data=[]
+    for record in SeqIO.parse(file, format='fasta'):
+        input_data=input_data +[[record.id, str(record.seq)]]
+    input_df = pd.DataFrame(input_data, columns=['id','seq'])
+    return input_df
 

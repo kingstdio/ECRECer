@@ -172,9 +172,6 @@ def train_ec_slice(trainX, trainY, modelPath, force_model_update=False):
 #endregion
 
 
-
-
-
 if __name__ =="__main__":
 
     # 1. 读入数据

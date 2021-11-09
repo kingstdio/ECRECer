@@ -32,6 +32,21 @@ def prepare_slice_file(x_data, y_data, x_file, y_file, ec_label_dict):
         )
 
     print('slice files prepared success')
+
+def prepare_slice_file_onlyx(x_data, x_file):
+    """
+    准备Slice使用的文件
+    Args:
+        x_data: X数据
+        x_file: X文件路径
+
+    Returns:
+
+    """
+    if (os.path.exists(x_file) == False) or (cfg.UPDATE_MODEL ==True):
+         to_file_matrix(file=x_file, ds=x_data.round(cfg.SAMPLING_BIT), col_num=cfg.FEATURE_NUM, stype='feature')
+
+    print('slice files prepared success')   
 #endregion
 
 #region 创建slice需要的数据文件
@@ -208,6 +223,8 @@ def importance_features_top(model, x_train, topN=10):
     importance_col_desc = importance_col.sort_values(by='weight', ascending=False)
     print(importance_col_desc.iloc[:topN, :])
 #endregion
+
+
 
 if __name__ =='__main__':
     print('success')

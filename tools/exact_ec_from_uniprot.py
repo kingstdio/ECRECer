@@ -3,9 +3,13 @@ import gzip
 import re
 from tqdm import tqdm
 import time
+import sys,os
+sys.path.append(os.getcwd())
+import config as cfg
+import pandas as pd
 
 #region 从gizp读取数据
-def read_file_from_gzip(file_in_path, file_out_path, extract_type):
+def read_file_from_gzip(file_in_path, file_out_path, extract_type, save_file_type='tsv'):
     """从原始Zip file 中解析数据
 
     Args:
@@ -13,6 +17,10 @@ def read_file_from_gzip(file_in_path, file_out_path, extract_type):
         file_out_path ([string]): [输出文件路径]]
         extract_type ([string]): [抽取数据的类型：with_ec, without_ec, full]]
     """
+    if save_file_type == 'feather':
+        outpath = file_out_path
+        file_out_path = cfg.TEMPDIR +'temprecords.tsv'
+
     table_head = [  'id', 
                     'name',
                     'isenzyme',
@@ -46,6 +54,11 @@ def read_file_from_gzip(file_in_path, file_out_path, extract_type):
             else:
                 continue
     file_write_obj.close()
+
+    if save_file_type == 'feather':
+        indata = pd.read_csv(cfg.TEMPDIR +'temprecords.tsv', sep='\t')
+        indata.to_feather(outpath)
+
  
  #endregion
 
@@ -125,13 +138,18 @@ def run_exact_task(infile, outfile):
 
 if __name__ =="__main__":
     start =  time.process_time()
-    # in_filepath = r'/home/shizhenkun/codebase/BioUniprot/data/201802/uniprot_sprot.dat.gz'
-    # out_filepath = r'/home/shizhenkun/codebase/BioUniprot/data/201802/sprot_full.tsv'
+    in_filepath_sprot = cfg.FILE_LATEST_SPROT
+    out_filepath_sprot = cfg.FILE_LATEST_SPROT_FEATHER
+    
+    in_filepath_trembl = cfg.FILE_LATEST_TREMBL
+    out_filepath_trembl = cfg.FILE_LATEST_TREMBL_FEATHER
 
-    in_filepath = r'/public/data/uniprot/uniprot_trembl.dat.gz'
-    out_filepath = r'/home/shizhenkun/codebase/BioUniprot/data/trembl/uniprot_trembl.tsv'
     extract_type ='full'
-    read_file_from_gzip(file_in_path=in_filepath, file_out_path=out_filepath, extract_type=extract_type)
+
+
+    # read_file_from_gzip(file_in_path=in_filepath_sprot, file_out_path=out_filepath_sprot, extract_type=extract_type, save_file_type='feather')
+
+    read_file_from_gzip(file_in_path=in_filepath_trembl, file_out_path=out_filepath_trembl, extract_type=extract_type, save_file_type='feather')
     end =  time.process_time()
     print('finished use time %6.3f s' % (end - start))
 
