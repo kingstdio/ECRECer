@@ -1,27 +1,68 @@
-import re
 import pandas as pd
 import numpy as np
 import joblib
 import os
 import benchmark_common as bcommon
 import config as cfg
-from Bio import SeqIO
 import benchmark_test as btest
 import argparse
 import tools.funclib as funclib
 import tools.embedding_esm as esmebd
+import time
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-i', help='input file', default=cfg.DATADIR + 'test.fasta')
-parser.add_argument('-o', help='output file', default=cfg.RESULTSDIR + 'ec_res.tsv')
+parser.add_argument('-i', help='input file', type=str, default=cfg.DATADIR + 'test.fasta')
+parser.add_argument('-o', help='output file', type=str, default=cfg.RESULTSDIR + 'ec_res.tsv')
+parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation', type=str, default='p')
 
+
+#region Integrate output
 def integrate_out_put(existing_table, blast_table, isEnzyme_pred_table, how_many_table, ec_table):
-    result_set = pd.concat([existing_table, blast_table], axis=0)
-    result_set = result_set.drop_duplicates(subset=['id'], keep='first').sort_values(by='seqlength')
+    """[Integrate output]
 
-    return result_set
+    Args:
+        existing_table ([DataFrame]): [db search results table]
+        blast_table ([DataFrame]): [sequence alignment results table]
+        isEnzyme_pred_table (DataFrame): [isEnzyme prediction results table]
+        how_many_table ([DataFrame]): [function counts prediction results table]
+        ec_table ([DataFrame]): [ec prediction table]
 
+    Returns:
+        [DataFrame]: [final results]
+    """
+    existing_table['res_type'] = 'db_match'
+    blast_table['res_type']='blast_match'
+    results_df = ec_table.merge(blast_table, on='id', how='left')
+
+    function_df = how_many_table.copy()
+    function_df = function_df.merge(isEnzyme_pred_table, on='id', how='left')
+    function_df = function_df.merge(blast_table[['id', 'ec_number']], on='id', how='left')
+    function_df['pred_function_counts']=function_df.parallel_apply(lambda x :integrate_enzyme_functioncounts(x.ec_number, x.isEnzyme_pred, x.pred_s, x.pred_m), axis=1)
+    results_df = results_df.merge(function_df[['id','pred_function_counts']],on='id',how='left')
+
+    results_df.loc[results_df[results_df.res_type.isnull()].index,'res_type']='dmlf_pred'
+    results_df['pred_ec']=results_df.parallel_apply(lambda x: gather_ec_by_fc(x.iloc[3:23],x.ec_number, x.pred_function_counts), axis=1)
+    results_df = results_df.iloc[:,np.r_[0,23,1,2,32,27:31]].rename(columns={'seq_x':'seq','seqlength_x':'seqlength'})
+
+    existing_table['pred_ec']=''
+    result_set = pd.concat([existing_table, results_df], axis=0)
+    result_set = result_set.drop_duplicates(subset=['id'], keep='first').sort_values(by='res_type')
+    result_set['ec_number'] = result_set.apply(lambda x: x.pred_ec if str(x.ec_number)=='nan' else x.ec_number, axis=1)
+    result_set.reset_index(drop=True, inplace=True)
+
+    return result_set.iloc[:,0:9]
+#endregion
+
+#region Predict Function Counts
 def predict_function_counts(test_data):
+    """[Predict Function Counts]
+
+    Args:
+        test_data ([DataFrame]): [DF contain protein ID and Seq]
+
+    Returns:
+        [DataFrame]: [col1:id, col2: single or multi; col3: multi counts]
+    """
     res=pd.DataFrame()
     res['id']=test_data.id
     model_s = joblib.load(cfg.MODELDIR+'/single_multi.model')
@@ -32,16 +73,86 @@ def predict_function_counts(test_data):
     res['pred_m']=pred_m+2
 
     return res
+#endregion
 
+#region Integrate function counts by blast, single and multi
+def integrate_enzyme_functioncounts(blast, isEnzyme, single, multi):
+    """[Integrate function counts by blast, single and multi]
 
+    Args:
+        blast ([type]): [blast results]
+        s ([type]): [single prediction]
+        m ([type]): [multi prediction]
 
+    Returns:
+        [type]: [description]
+    """
+    if str(blast)!='nan':
+        if str(blast)=='-':
+            return 0
+        else:
+            return len(blast.split(','))
+    if isEnzyme == 0:
+        return 0
+    if single ==1:
+        return 1
+    return multi
+#endregion
 
+#region format finnal ec by function counts
+def gather_ec_by_fc(toplist, ec_blast ,counts):
+    """[format finnal ec by function counts]
 
-if __name__ =='__main__':
-    args = parser.parse_args()
+    Args:
+        toplist ([list]): [top 20 predicted EC]
+        ec_blast ([string]): [blast results]
+        counts ([int]): [function counts]
+
+    Returns:
+        [string]: [comma sepreated ec string]
+    """
+    if counts==0:
+        return '-'
+    elif str(ec_blast)!='nan':
+        return str(ec_blast)
+    else:
+        return ','.join(toplist[0:counts])
+#endregion
+
+#region GOT EC PREDICTION BY SLICE
+def predict_ec_slice(test_data):
+    """[GOT EC PREDICTION BY SLICE]
+
+    Args:
+        test_data ([DataFrame]): [esm32 format DataFrame]
+    """
+    pr_X = test_data.iloc[:,1:]
+    timestr = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+    xfile = cfg.TEMPDIR+'ptest_'+timestr+'.txt'
+    xpred = cfg.TEMPDIR+'ptest_'+timestr+'.tsv'
+    cfg.FEATURE_NUM = 1280
+    bcommon.prepare_slice_file_onlyx(x_data=pr_X,  x_file=xfile)
+    dict_ec_label = np.load(cfg.FILE_EC_LABEL_DICT, allow_pickle=True).item()
+    slice_pred_ec = btest.get_slice_res(slice_query_file=xfile, 
+                                        model_path= cfg.MODELDIR+'/slice_esm32', 
+                                        dict_ec_label=dict_ec_label, 
+                                        test_set=test_data,  
+                                        res_file=xpred)
+    
+    return slice_pred_ec
+#endregion
+
+#region run
+def step_by_step_run(input_fasta, output_tsv, mode='p'):
+    """[run]
+    Args:
+        input_fasta ([string]): [input fasta file]
+        output_tsv ([string]): [output tsv file]
+    """
+    start = time.process_time()
     # 1. 读入数据
     print('step 1: loading data') 
-    input_df = funclib.load_fasta_to_table(args.i) # test fasta
+    input_df = funclib.load_fasta_to_table(input_fasta) # test fasta
     latest_sprot = pd.read_feather(cfg.FILE_LATEST_SPROT_FEATHER) #sprot db
 
     # 2. 查找数据
@@ -52,11 +163,17 @@ if __name__ =='__main__':
     noExist_data.reset_index(drop=True, inplace=True)
     noExist_data = noExist_data.iloc[:,np.r_[0,2,1,12,7,9:12]].rename(columns={'id_x':'id','id_y':'id_uniprot'})
 
+    if len(noExist_data) == 0:
+        exist_data.to_csv(output_tsv, sep='\t')
+        end = time.process_time()
+        print('All done running time: %s Seconds'%(end-start))
+        return
+
     # 3. EMBedding
     print('step 3: Embedding')
     rep0, rep32, rep33 = esmebd.get_rep_multi_sequence(sequences=noExist_data, model='esm1b_t33_650M_UR50S',seqthres=1022)
 
-    # 4. 获取序列比对结果
+    # 4. sequence alignment
     print('step 4: sequence alignment')
     if ~os.path.exists(cfg.FILE_BLAST_PRODUCTION_DB):
         funclib.table2fasta(latest_sprot, cfg.FILE_BLAST_PRODUCTION_FASTA)
@@ -68,59 +185,39 @@ if __name__ =='__main__':
     blast_res = blast_res.iloc[:,np.r_[0,1,11,12,6,8:11]].rename(columns={'id_x':'id','id_y':'id_uniprot'})
 
     # 5. isEnzyme Prediction
-    print('predict isEnzyme')
+    print('step 5: predict isEnzyme')
     model_isEnzyme = joblib.load(cfg.ISENZYME_MODEL)
     pred_isEnzyme = pd.DataFrame()
     pred_isEnzyme['id']=rep32.id
     pred_isEnzyme['isEnzyme_pred'] = model_isEnzyme.predict(rep32.iloc[:,1:])
 
     # 6. How many Prediction
-    print('predict function counts')
-    model_isEnzyme = joblib.load(cfg.ISENZYME_MODEL)
-    # N. integrating
+    print('step 6: predict function counts')
+    pred_howmany = predict_function_counts(rep32)
 
-    print('integrate results')
+
+    # 7. EC Prediction
+    print('step 7: predict EC')
+    pred_ec = predict_ec_slice(test_data=rep32)
+    pred_ec = noExist_data[['id','seq']].merge(pred_ec, on='id', how='left')
+    pred_ec['seqlength']=pred_ec.seq.parallel_apply(lambda x: len(x) )
+
+    print('step 8: integrate results')
 
     output_df = integrate_out_put(existing_table=exist_data,
                                   blast_table=blast_res,
-                                  isEnzyme_pred_table = pd.NA, 
-                                  how_many_table = pd.NA, 
-                                  ec_table = pd.NA
+                                  isEnzyme_pred_table = pred_isEnzyme, 
+                                  how_many_table = pred_howmany, 
+                                  ec_table = pred_ec
                                 )
-                    
-    output_df.to_csv( args.o, sep='\t')
-    # # 3.获取酶-非酶预测结果
-    # print('step 3. get isEnzyme results')
-    # testX, testY = get_test_set(data=test)
-    # isEnzyme_pred, isEnzyme_pred_prob = get_isEnzymeRes(querydata=testX, model_file=cfg.ISENZYME_MODEL)
+    print('step 9: writting results')                
+    output_df.to_csv(output_tsv, sep='\t')
+
+    end = time.process_time()
+    print('All done running time: %s Seconds'%(end-start))
+#endregion
 
 
-    # # 4. 预测几功能酶预测结果
-    # print('step 4. get howmany functions ')
-    # howmany_Enzyme_pred, howmany_Enzyme_pred_prob = get_howmany_Enzyme(querydata=testX, model_file=cfg.HOWMANY_MODEL)
-
-    # # 5.获取Slice预测结果
-    # print('step 5. get EC prediction results')
-    # # 5.1 准备slice所用文件
-    # bcommon.prepare_slice_file( x_data=testX, 
-    #                             y_data=testY['ec_number'], 
-    #                             x_file=cfg.FILE_SLICE_TESTX,
-    #                             y_file=cfg.FILE_SLICE_TESTY,
-    #                             ec_label_dict=dict_ec_label
-    #                         )
-    # # 5.2 获得预测结果
-    # # slice_pred_ec = get_slice_res(slice_query_file=cfg.FILE_SLICE_TESTX, model_path= cfg.MODELDIR, dict_ec_label=dict_ec_label, test_set=test,  res_file=cfg.FILE_SLICE_RESULTS)
-    # slice_pred_ec = get_slice_res(slice_query_file=cfg.DATADIR+'slice_test_x_esm33.txt', model_path= cfg.MODELDIR+'/slice_esm33', dict_ec_label=dict_ec_label, test_set=test,  res_file=cfg.FILE_SLICE_RESULTS)
-    
-    # slice_pred_ec['isEnzyme_pred_xg'] = isEnzyme_pred
-    # slice_pred_ec['functionCounts_pred_xg'] = howmany_Enzyme_pred
-    # slice_pred_ec = slice_pred_ec.merge(blast_res, on='id', how='left')
-
-    # # slice_pred_ec.to_csv(cfg.RESULTSDIR + 'singele_slice.tsv', sep='\t', index=None)
-    # # 5.5 获取blast EC预测结果
-
-    # # 6.将结果集成输出(slice_pred=slice_pred_ec, dict_ec_transfer=dict_ec_transfer)
-    # slice_pred_ec = run_integrage(slice_pred=slice_pred_ec, dict_ec_transfer = dict_ec_transfer)    
-    # slice_pred_ec.to_csv(cfg.FILE_INTE_RESULTS, sep='\t', index=None)
-
-    # print('predict finished')
+if __name__ =='__main__':
+    args = parser.parse_args()
+    step_by_step_run(input_fasta=args.i, output_tsv=args.o, mode=args.mode)
