@@ -14,10 +14,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-i', help='input file', type=str, default=cfg.DATADIR + 'test.fasta')
 parser.add_argument('-o', help='output file', type=str, default=cfg.RESULTSDIR + 'ec_res.tsv')
 parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation', type=str, default='p')
+parser.add_argument('-topk', help='recommendation records, min=1, max=20', type=int, default='5')
 
 
 #region Integrate output
-def integrate_out_put(existing_table, blast_table, isEnzyme_pred_table, how_many_table, ec_table):
+def integrate_out_put(existing_table, blast_table, isEnzyme_pred_table, how_many_table, ec_table, mode='p', topnum=1):
     """[Integrate output]
 
     Args:
@@ -44,13 +45,22 @@ def integrate_out_put(existing_table, blast_table, isEnzyme_pred_table, how_many
     results_df['pred_ec']=results_df.parallel_apply(lambda x: gather_ec_by_fc(x.iloc[3:23],x.ec_number, x.pred_function_counts), axis=1)
     results_df = results_df.iloc[:,np.r_[0,23,1,2,32,27:31]].rename(columns={'seq_x':'seq','seqlength_x':'seqlength'})
 
-    existing_table['pred_ec']=''
-    result_set = pd.concat([existing_table, results_df], axis=0)
-    result_set = result_set.drop_duplicates(subset=['id'], keep='first').sort_values(by='res_type')
-    result_set['ec_number'] = result_set.apply(lambda x: x.pred_ec if str(x.ec_number)=='nan' else x.ec_number, axis=1)
-    result_set.reset_index(drop=True, inplace=True)
+    
 
-    return result_set.iloc[:,0:9]
+    if mode=='p':
+        existing_table['pred_ec']=''
+        result_set = pd.concat([existing_table, results_df], axis=0)
+        result_set = result_set.drop_duplicates(subset=['id'], keep='first').sort_values(by='res_type')
+        result_set['ec_number'] = result_set.apply(lambda x: x.pred_ec if str(x.ec_number)=='nan' else x.ec_number, axis=1)
+        result_set.reset_index(drop=True, inplace=True)
+        result_set = result_set.iloc[:,0:9]
+    if mode =='r':
+        result_set= results_df.merge(ec_table, on=['id'], how='left')
+        result_set=result_set.iloc[:,np.r_[0:3,30,5:9, 4,10:30]]
+        result_set = result_set.rename(columns=dict({'seq_x': 'seq','pred_ec': 'top0','top0_y': 'top1' },  **{'top'+str(i) : 'top'+str(i+1) for i in range(0, 20)}))
+        result_set = result_set.iloc[:,0:(8+topnum)]
+
+    return result_set
 #endregion
 
 #region Predict Function Counts
@@ -143,15 +153,20 @@ def predict_ec_slice(test_data):
 #endregion
 
 #region run
-def step_by_step_run(input_fasta, output_tsv, mode='p'):
+def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
     """[run]
     Args:
         input_fasta ([string]): [input fasta file]
         output_tsv ([string]): [output tsv file]
     """
     start = time.process_time()
+    if mode =='p':
+        print('run in annoation mode')
+    if mode =='r':
+        print('run in recommendation mode')
+
     # 1. 读入数据
-    print('step 1: loading data') 
+    print('step 1: loading data')
     input_df = funclib.load_fasta_to_table(input_fasta) # test fasta
     latest_sprot = pd.read_feather(cfg.FILE_LATEST_SPROT_FEATHER) #sprot db
 
@@ -168,10 +183,13 @@ def step_by_step_run(input_fasta, output_tsv, mode='p'):
         end = time.process_time()
         print('All done running time: %s Seconds'%(end-start))
         return
-
+    
     # 3. EMBedding
     print('step 3: Embedding')
-    rep0, rep32, rep33 = esmebd.get_rep_multi_sequence(sequences=noExist_data, model='esm1b_t33_650M_UR50S',seqthres=1022)
+    if mode =='p':
+        rep0, rep32, rep33 = esmebd.get_rep_multi_sequence(sequences=noExist_data, model='esm1b_t33_650M_UR50S',seqthres=1022)
+    if mode == 'r':
+        rep0, rep32, rep33 = esmebd.get_rep_multi_sequence(sequences=input_df, model='esm1b_t33_650M_UR50S',seqthres=1022)
 
     # 4. sequence alignment
     print('step 4: sequence alignment')
@@ -179,8 +197,10 @@ def step_by_step_run(input_fasta, output_tsv, mode='p'):
         funclib.table2fasta(latest_sprot, cfg.FILE_BLAST_PRODUCTION_FASTA)
         cmd = r'diamond makedb --in {0} -d {1}'.format(cfg.FILE_BLAST_PRODUCTION_FASTA, cfg.FILE_BLAST_PRODUCTION_DB)
         os.system(cmd)
-
-    blast_res = funclib.getblast_usedb(db=cfg.FILE_BLAST_PRODUCTION_DB, test=noExist_data)
+    if mode =='p':
+        blast_res = funclib.getblast_usedb(db=cfg.FILE_BLAST_PRODUCTION_DB, test=noExist_data)
+    if mode == 'r':
+        blast_res = funclib.getblast_usedb(db=cfg.FILE_BLAST_PRODUCTION_DB, test=input_df)
     blast_res = blast_res[['id', 'sseqid']].merge(latest_sprot, left_on='sseqid', right_on='id', how='left').iloc[:,np.r_[0,2:14]]
     blast_res = blast_res.iloc[:,np.r_[0,1,11,12,6,8:11]].rename(columns={'id_x':'id','id_y':'id_uniprot'})
 
@@ -199,7 +219,11 @@ def step_by_step_run(input_fasta, output_tsv, mode='p'):
     # 7. EC Prediction
     print('step 7: predict EC')
     pred_ec = predict_ec_slice(test_data=rep32)
-    pred_ec = noExist_data[['id','seq']].merge(pred_ec, on='id', how='left')
+    if mode=='p':
+        pred_ec = noExist_data[['id','seq']].merge(pred_ec, on='id', how='left')
+    if mode == 'r':
+        pred_ec = input_df[['id', 'seq']].merge(pred_ec, on='id', how='left')
+    
     pred_ec['seqlength']=pred_ec.seq.parallel_apply(lambda x: len(x) )
 
     print('step 8: integrate results')
@@ -208,10 +232,12 @@ def step_by_step_run(input_fasta, output_tsv, mode='p'):
                                   blast_table=blast_res,
                                   isEnzyme_pred_table = pred_isEnzyme, 
                                   how_many_table = pred_howmany, 
-                                  ec_table = pred_ec
+                                  ec_table = pred_ec,
+                                  mode=mode,
+                                  topnum=topnum
                                 )
     print('step 9: writting results')                
-    output_df.to_csv(output_tsv, sep='\t')
+    output_df.to_csv(output_tsv, sep='\t', index=False)
 
     end = time.process_time()
     print('All done running time: %s Seconds'%(end-start))
@@ -220,4 +246,13 @@ def step_by_step_run(input_fasta, output_tsv, mode='p'):
 
 if __name__ =='__main__':
     args = parser.parse_args()
-    step_by_step_run(input_fasta=args.i, output_tsv=args.o, mode=args.mode)
+    input_file = args.i
+    output_file = args.o
+    compute_mode = args.mode
+    topk = args.topk
+    
+    step_by_step_run(   input_fasta=input_file, 
+                        output_tsv=output_file, 
+                        mode=compute_mode, 
+                        topnum=topk
+                    )

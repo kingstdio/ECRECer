@@ -83,7 +83,7 @@ def lrmain(X_train_std, Y_train, X_test_std, Y_test, type='binary'):
     return groundtruth, predict, lrpredpro, logreg
 
 def knnmain(X_train_std, Y_train, X_test_std, Y_test, type='binary'):
-    knn=KNeighborsClassifier(n_neighbors=5, n_jobs=-2)
+    knn=KNeighborsClassifier(n_neighbors=5, n_jobs=16)
     knn.fit(X_train_std, Y_train)
     predict = knn.predict(X_test_std)
     lrpredpro = knn.predict_proba(X_test_std)
