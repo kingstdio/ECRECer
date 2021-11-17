@@ -9,10 +9,13 @@ import argparse
 import tools.funclib as funclib
 import tools.embedding_esm as esmebd
 import time
+from pandarallel import pandarallel #  import pandaralle
+pandarallel.initialize() # init
+
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-i', help='input file', type=str, default=cfg.DATADIR + 'test.fasta')
-parser.add_argument('-o', help='output file', type=str, default=cfg.RESULTSDIR + 'ec_res.tsv')
+parser.add_argument('-i', help='input file （fasta format）', type=str, default=cfg.DATADIR + 'test.fasta')
+parser.add_argument('-o', help='output file （tsv table）', type=str, default=cfg.RESULTSDIR + 'ec_res.tsv')
 parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation', type=str, default='p')
 parser.add_argument('-topk', help='recommendation records, min=1, max=20', type=int, default='5')
 
