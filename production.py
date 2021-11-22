@@ -10,7 +10,7 @@ import tools.funclib as funclib
 import tools.embedding_esm as esmebd
 import time
 from pandarallel import pandarallel #  import pandaralle
-pandarallel.initialize() # init
+
 
 
 parser = argparse.ArgumentParser()
@@ -248,6 +248,7 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
 
 
 if __name__ =='__main__':
+    pandarallel.initialize() #init
     args = parser.parse_args()
     input_file = args.i
     output_file = args.o
