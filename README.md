@@ -8,6 +8,7 @@ Detailed information about the framework can be found in our paper xxx.
 + Sklearn
 + Xgboost
 + conda
++ jupyter lab
 + ...
 
 > Create conda env use [env.yaml](./env.yaml)
