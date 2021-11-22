@@ -1,32 +1,17 @@
 # DMLF: Enzyme Commission Number Predicting and Benchmarking with Multi-agent Dual-core Learning
 
-This repo contains source codes for the paper of 「Dual-core Multi-agent Learning Framework For EC Number Prediction」.
+This repo contains source codes for a EC prediction tool namely ECRECer, which is an implementation  of our paper: 「Dual-core Multi-agent Learning Framework For EC Number Prediction」.
 Detailed information about the framework can be found in our paper xxx.
 
-# Repository structure
-.
-├── _config.yml   
-├── _data  
-│   └── members.yml   
-├── _drafts
-│   ├── begin-with-the-crazy-ideas.md
-│   └── on-simplicity-in-technology.md
-├── _includes
-│   ├── footer.html
-│   └── header.html
-├── _layouts
-│   ├── default.html
-│   └── post.html
-├── _posts
-│   ├── 2007-10-29-why-every-programmer-should-play-nethack.md
-│   └── 2009-04-26-barcamp-boston-4-roundup.md
-├── _sass
-│   ├── _base.scss
-│   └── _layout.scss
-├── _site
-├── .jekyll-cache
-│   └── Jekyll
-│       └── Cache
-│           └── [...]
-├── .jekyll-metadata
-└── index.html # can also be an 'index.md' with valid front matter
+# Prerequisites
++ Python >= 3.6
++ Sklearn
++ Xgboost
++ conda
+
+> Create conda env use [env.yaml](./env.yaml)
+
+```python
+conda env create -f env.yaml
+```
+
