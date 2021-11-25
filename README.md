@@ -1,6 +1,6 @@
 # DMLF: Enzyme Commission Number Predicting and Benchmarking with Multi-agent Dual-core Learning
 
-This repo contains source codes for a EC prediction tool namely ECRECer, which is an implementation  of our paper: 「Dual-core Multi-agent Learning Framework For EC Number Prediction」.
+This repo contains source codes for a EC prediction tool namely ECRECer, which is an implementation  of our paper: 「Dual-core Multi-agent Learning Framework For EC Number Prediction.
 Detailed information about the framework can be found in our paper xxx.
 
 # Prerequisites
@@ -54,3 +54,5 @@ python benchmark_evaluation.py
 ```python
 python production.py -i input_fasta_file -o output_tsv_file -mode [p|r] -topk 5
 ```
+
+# Other details are coming soon...
