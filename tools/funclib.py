@@ -12,6 +12,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.neighbors import KNeighborsClassifier
 import xgboost
 from xgboost import XGBClassifier
+from sklearn.model_selection import GridSearchCV
 from tqdm import tqdm
 from Bio import SeqIO
 import joblib
@@ -98,7 +99,7 @@ def svmmain(X_train_std, Y_train, X_test_std, Y_test):
     groundtruth = Y_test
     return groundtruth, predict, predictprob,svcmodel
 
-def xgmain(X_train_std, Y_train, X_test_std, Y_test, type='binary'):
+def xgmain(X_train_std, Y_train, X_test_std, Y_test, type='binary', vali=True):
 
     x_train, x_vali, y_train, y_vali = train_test_split(X_train_std, Y_train, test_size=0.2, random_state=1)
     eval_set = [(x_train, y_train), (x_vali, y_vali)]
@@ -124,7 +125,10 @@ def xgmain(X_train_std, Y_train, X_test_std, Y_test, type='binary'):
                         use_label_encoder=False,
                         n_estimators=120
                     )
-        model.fit(x_train, y_train, eval_metric="mlogloss", eval_set=eval_set, verbose=False)
+        if vali:
+            model.fit(x_train, y_train, eval_metric="mlogloss", eval_set=eval_set, verbose=False)
+        else:
+            model.fit(X_train_std, Y_train, eval_metric="mlogloss", eval_set=None, verbose=False)
     
     predict = model.predict(X_test_std)
     predictprob = model.predict_proba(X_test_std)
@@ -194,17 +198,26 @@ def evaluate(baslineName, X_train_std, Y_train, X_test_std, Y_test, type='binary
 
     caculateMetrix(groundtruth=groundtruth,predict=predict,baselineName=baslineName, type=type)
 
-    # acc = metrics.accuracy_score(groundtruth, predict)
-    # precision = metrics.precision_score(groundtruth, predict, zero_division=1 )
-    # recall = metrics.recall_score(groundtruth, predict)
-    # f1 = metrics.f1_score(groundtruth, predict)
-    # auroc = metrics.roc_auc_score(groundtruth, predictprob)
-    # auprc = metrics.average_precision_score(groundtruth, predictprob)
-    # tn, fp, fn, tp = metrics.confusion_matrix(groundtruth, predict).ravel()
+def evaluate_2(baslineName, X_train_std, Y_train, X_test_std, Y_test, type='binary'):
 
-    # npv = tn/(fn+tn+1.4E-45)
-    
-    # print(baslineName, '\t\t%f' %acc,'\t%f'% precision,'\t\t%f'%npv,'\t%f'% recall,'\t%f'% f1, '\t%f'% auroc,'\t%f'% auprc, '\t', 'tp:',tp,'fp:',fp,'fn:',fn,'tn:',tn)
+    if baslineName == 'lr':
+        groundtruth, predict, predictprob, model = lrmain (X_train_std, Y_train, X_test_std, Y_test, type=type)
+    elif baslineName == 'svm':
+        groundtruth, predict, predictprob, model = svmmain(X_train_std, Y_train, X_test_std, Y_test)
+    elif baslineName =='xg':
+        groundtruth, predict, predictprob, model = xgmain(X_train_std, Y_train, X_test_std, Y_test, type=type, vali=False)
+    elif baslineName =='dt':
+        groundtruth, predict, predictprob, model = dtmain(X_train_std, Y_train, X_test_std, Y_test)
+    elif baslineName =='rf':
+        groundtruth, predict, predictprob, model = rfmain(X_train_std, Y_train, X_test_std, Y_test)
+    elif baslineName =='gbdt':
+        groundtruth, predict, predictprob, model = gbdtmain(X_train_std, Y_train, X_test_std, Y_test)
+    elif baslineName =='knn':
+        groundtruth, predict, predictprob, model = knnmain(X_train_std, Y_train, X_test_std, Y_test, type=type)
+    else:
+        print('Baseline Name Errror')
+
+    caculateMetrix(groundtruth=groundtruth,predict=predict,baselineName=baslineName, type=type)
 
 def run_baseline(X_train, Y_train, X_test, Y_test, type='binary'):
     methods=['knn','lr', 'xg', 'dt', 'rf', 'gbdt']
@@ -214,7 +227,15 @@ def run_baseline(X_train, Y_train, X_test, Y_test, type='binary'):
         print('%12s'%'baslineName', '\t\t', 'accuracy','\t', 'precision-macro \t', 'recall-macro','\t', 'f1-macro')
     for method in methods:
         evaluate(method, X_train, Y_train, X_test, Y_test, type=type)
-        
+ 
+def run_baseline_2(X_train, Y_train, X_test, Y_test, type='binary'):
+    methods=['knn', 'xg', 'dt', 'rf', 'gbdt']
+    if type == 'binary':
+        print('baslineName', '\t', 'accuracy','\t', 'precision(PPV) \t NPV \t\t', 'recall','\t', 'f1', '\t\t', '\t\t confusion Matrix')
+    if type =='multi':
+        print('%12s'%'baslineName', '\t\t', 'accuracy','\t', 'precision-macro \t', 'recall-macro','\t', 'f1-macro')
+    for method in methods:
+        evaluate_2(method, X_train, Y_train, X_test, Y_test, type=type)
     
     
 def static_interval(data, span):

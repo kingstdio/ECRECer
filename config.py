@@ -15,7 +15,7 @@ TEST_FASTA = DATADIR+'test.fasta'
 FILE_LATEST_SPROT = DATADIR + 'uniprot_sprot_latest.dat.gz'
 FILE_LATEST_TREMBL = DATADIR + 'uniprot_trembl_latest.dat.gz'
 
-FILE_LATEST_SPROT_FEATHER = DATADIR + 'latest_sport.feather'
+FILE_LATEST_SPROT_FEATHER = DATADIR + 'latest_sprot.feather'
 FILE_LATEST_TREMBL_FEATHER = DATADIR + 'latest_trembl.feather'
 
 FILE_SLICE_TRAINX = DATADIR + 'slice_train_x.txt'
