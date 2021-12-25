@@ -176,7 +176,7 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
     # 2. 查找数据
     print('step 2: find existing data')
     find_data =input_df.merge(latest_sprot, on='seq', how='left')
-    exist_data= find_data[~find_data.name.isnull()].iloc[:,np.r_[0,2,1,12,7,9:12]].rename(columns={'id_x':'id','id_y':'id_uniprot'})
+    exist_data= find_data[~find_data.id_y.isnull()].iloc[:,np.r_[0,2,1,12,7,9:12]].rename(columns={'id_x':'id','id_y':'id_uniprot'})
     noExist_data = find_data[find_data.name.isnull()]
     noExist_data.reset_index(drop=True, inplace=True)
     noExist_data = noExist_data.iloc[:,np.r_[0,2,1,12,7,9:12]].rename(columns={'id_x':'id','id_y':'id_uniprot'})
