@@ -62,6 +62,7 @@ def integrate_out_put(existing_table, blast_table, isEnzyme_pred_table, how_many
         result_set=result_set.iloc[:,np.r_[0:3,30,5:9, 4,10:30]]
         result_set = result_set.rename(columns=dict({'seq_x': 'seq','pred_ec': 'top0','top0_y': 'top1' },  **{'top'+str(i) : 'top'+str(i+1) for i in range(0, 20)}))
         result_set = result_set.iloc[:,0:(8+topnum)]
+        result_set.loc[result_set[result_set.id.isin(existing_table.id)].index.values,'res_type']= 'db_match'
 
     return result_set
 #endregion
