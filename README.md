@@ -61,3 +61,8 @@ python production.py -i input_fasta_file -o output_tsv_file -mode [p|r] -topk 5
 ```
 
 # Other details are coming soon...
+
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/kingstdio/ECRECer.svg)](https://github.com/kingstdio/ECRECer/)
