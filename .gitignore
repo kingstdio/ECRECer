@@ -131,6 +131,7 @@ dmypy.json
 
 #exclude tempfile
 tmp/
+temp/
 data/
 baselines/
 results/
@@ -140,5 +141,6 @@ results/
 *.gz
 model/
 *.model
+*.st
 
 model/single_multi.model

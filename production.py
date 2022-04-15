@@ -16,7 +16,7 @@ from pandarallel import pandarallel #  import pandaralle
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', help='input file （fasta format）', type=str, default=cfg.DATADIR + 'test.fasta')
 parser.add_argument('-o', help='output file （tsv table）', type=str, default=cfg.RESULTSDIR + 'ec_res.tsv')
-parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation', type=str, default='p')
+parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation', type=str, default='r')
 parser.add_argument('-topk', help='recommendation records, min=1, max=20', type=int, default='5')
 
 
@@ -57,14 +57,24 @@ def integrate_out_put(existing_table, blast_table, isEnzyme_pred_table, how_many
         result_set['ec_number'] = result_set.apply(lambda x: x.pred_ec if str(x.ec_number)=='nan' else x.ec_number, axis=1)
         result_set.reset_index(drop=True, inplace=True)
         result_set = result_set.iloc[:,0:9]
+        
+        result_set['seqlength'] = result_set.seq.apply(lambda x: len(x))
+        result_set['ec_number'] = result_set.ec_number.apply(lambda x: 'Non-Enzyme' if len(x)==1 else x)
+        result_set = result_set.rename(columns={'ec_number':'ecrecer_pred_ec_number'})
+        
+        result_set = result_set[['id','ecrecer_pred_ec_number','seq','seqlength']]
+    
     if mode =='r':
         result_set= results_df.merge(ec_table, on=['id'], how='left')
         result_set=result_set.iloc[:,np.r_[0:3,30,5:9, 4,10:30]]
         result_set = result_set.rename(columns=dict({'seq_x': 'seq','pred_ec': 'top0','top0_y': 'top1' },  **{'top'+str(i) : 'top'+str(i+1) for i in range(0, 20)}))
-        result_set = result_set.iloc[:,0:(8+topnum)]
-        result_set.loc[result_set[result_set.id.isin(existing_table.id)].index.values,'res_type']= 'db_match'
-
+#         result_set = result_set.iloc[:,0:(8+topnum)]
+#         result_set.loc[result_set[result_set.id.isin(existing_table.id)].index.values,'res_type']= 'db_match'
+      
+        result_set = result_set.iloc[:,np.r_[0, 2:4,8:(8+topnum)]]
+    
     return result_set
+
 #endregion
 
 #region Predict Function Counts
