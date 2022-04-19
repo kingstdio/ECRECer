@@ -1,7 +1,19 @@
+<!--
+ * @Author: Zhenkun Shi
+ * @Date: 2022-04-19 11:21:15
+ * @LastEditors: Zhenkun Shi
+ * @LastEditTime: 2022-04-19 11:53:47
+ * @FilePath: /DMLF/README.md
+ * @Description: 
+ * 
+ * Copyright (c) 2022 by tibd, All Rights Reserved. 
+-->
 # DMLF: Enzyme Commission Number Predicting and Benchmarking with Multi-agent Dual-core Learning
 
 This repo contains source codes for a EC prediction tool namely ECRECer, which is an implementation  of our paper: 「ECRECer: Enzyme Commission Number Recommendation and Benchmarking based on Multiagent Dual-core Learning」
-Detailed information about the framework can be found in our paper xxx.
+
+Detailed information about the framework can be found in our paper
+> Shi, Z., Yuan, Q., Wang, R., Li, H., Liao, X., & Ma, H. (2022). ECRECer: Enzyme Commission Number Recommendation and Benchmarking based on Multiagent Dual-core Learning. arXiv preprint arXiv:2202.03632.
 
 For simply use our tools to predict EC numbers, pls visit our web service at https://ecrecer.biodesign.ac.cn
 
