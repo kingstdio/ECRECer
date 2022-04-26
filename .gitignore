@@ -132,7 +132,15 @@ dmypy.json
 #exclude tempfile
 tmp/
 temp/
-data/
+*.feather
+*.fasta
+*.dmnd
+*.txt
+*.feature
+*.tsv
+*.npy
+*.csv
+
 baselines/
 results/
 
@@ -144,3 +152,5 @@ model/
 *.st
 
 model/single_multi.model
+data/file_out_path
+
