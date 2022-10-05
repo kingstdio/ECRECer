@@ -1,9 +1,40 @@
+'''
+Author: Zhenkun Shi
+Date: 2020-06-05 05:10:25
+LastEditors: Zhenkun Shi
+LastEditTime: 2022-10-05 09:15:06
+FilePath: /DMLF/config.py
+Description: 
+
+Copyright (c) 2022 by tibd, All Rights Reserved. 
+'''
+
+
 # 1. 定义数据目录
 ROOTDIR= r'''/home/shizhenkun/codebase/DMLF/'''
 DATADIR = ROOTDIR +'data/'
 RESULTSDIR = ROOTDIR +'results/'
 MODELDIR = ROOTDIR +'model'
 TEMPDIR =ROOTDIR +'tmp/'
+DIR_UNIPROT = DATADIR + 'uniprot/'
+DIR_DATASETS = DATADIR +'datasets/'
+DIR_FEATURES = DATADIR + 'featureBank/'
+
+
+#2.URL
+URL_SPROT_SNAP201802=f'https://ftp.uniprot.org/pub/databases/uniprot/previous_releases/release-2018_02/knowledgebase/uniprot_sprot-only2018_02.tar.gz'
+URL_SPROT_SNAP202202=f'https://ftp.uniprot.org/pub/databases/uniprot/previous_releases/release-2022_02/knowledgebase/uniprot_sprot-only2022_02.tar.gz'
+
+
+#3.FILES
+FILE_SPROT_SNAP201802=DIR_UNIPROT+'uniprot_sprot-only2018_02.tar.gz'
+FILE_SPROT_SNAP202202=DIR_UNIPROT+'uniprot_sprot-only2022_02.tar.gz'
+
+FILE_FEATURE_UNIREP = DIR_FEATURES + 'embd_unirep.feather'
+FILE_FEATURE_ESM0 = DIR_FEATURES + 'embd_esm0.feather'
+FILE_FEATURE_ESM32 = DIR_FEATURES + 'embd_esm32.feather'
+FILE_FEATURE_ESM33 = DIR_FEATURES + 'embd_esm33.feather'
+
 
 
 
