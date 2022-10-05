@@ -207,7 +207,7 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
 
     # 4. sequence alignment
     print('step 4: sequence alignment')
-    if ~os.path.exists(cfg.FILE_BLAST_PRODUCTION_DB):
+    if not os.path.exists(cfg.FILE_BLAST_PRODUCTION_DB):
         funclib.table2fasta(latest_sprot, cfg.FILE_BLAST_PRODUCTION_FASTA)
         cmd = r'diamond makedb --in {0} -d {1}'.format(cfg.FILE_BLAST_PRODUCTION_FASTA, cfg.FILE_BLAST_PRODUCTION_DB)
         os.system(cmd)
