@@ -2,7 +2,7 @@
 Author: Zhenkun Shi
 Date: 2020-06-05 05:10:25
 LastEditors: Zhenkun Shi
-LastEditTime: 2022-10-05 09:15:06
+LastEditTime: 2022-10-07 14:12:08
 FilePath: /DMLF/config.py
 Description: 
 
@@ -24,11 +24,12 @@ DIR_FEATURES = DATADIR + 'featureBank/'
 #2.URL
 URL_SPROT_SNAP201802=f'https://ftp.uniprot.org/pub/databases/uniprot/previous_releases/release-2018_02/knowledgebase/uniprot_sprot-only2018_02.tar.gz'
 URL_SPROT_SNAP202202=f'https://ftp.uniprot.org/pub/databases/uniprot/previous_releases/release-2022_02/knowledgebase/uniprot_sprot-only2022_02.tar.gz'
-
+URL_SPROT_LATEST=f'https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.dat.gz'
 
 #3.FILES
 FILE_SPROT_SNAP201802=DIR_UNIPROT+'uniprot_sprot-only2018_02.tar.gz'
 FILE_SPROT_SNAP202202=DIR_UNIPROT+'uniprot_sprot-only2022_02.tar.gz'
+FILE_SPROT_LATEST=DIR_UNIPROT+'uniprot_sprot_leatest.dat.gz'
 
 FILE_FEATURE_UNIREP = DIR_FEATURES + 'embd_unirep.feather'
 FILE_FEATURE_ESM0 = DIR_FEATURES + 'embd_esm0.feather'
