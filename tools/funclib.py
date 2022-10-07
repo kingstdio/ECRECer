@@ -7,6 +7,7 @@ from sklearn.metrics import multilabel_confusion_matrix
 from sklearn import linear_model, datasets
 from sklearn.svm import SVC
 from sklearn import tree
+from tkinter import _flatten
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -299,7 +300,22 @@ def getblast_fasta(trainfasta, testfasta):
     return res_data
 
 
+#region 统计EC数
+def stiatistic_ec_num(eclist):
+    """统计EC数量
 
+    Args:
+        eclist (list): 可包含多功能酶的EC列表，用；分割
+
+    Returns:
+        int: 列表中包含的独立EC数量
+    """
+    eclist = list(eclist.flatten()) #展成1维
+    eclist = _flatten([item.split(';') for item in eclist]) #分割多功能酶
+    eclist = [item.strip() for item in eclist] # 去空格
+    num_ecs = len(set(eclist))
+    return num_ecs
+#endregion
 
 def caculateMetrix_1(baselineName,tp, fp, tn,fn):
     sampleNum = tp+fp+tn+fn
