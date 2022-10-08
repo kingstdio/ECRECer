@@ -2,16 +2,18 @@
 Author: Zhenkun Shi
 Date: 2020-06-05 05:10:25
 LastEditors: Zhenkun Shi
-LastEditTime: 2022-10-07 14:12:08
+LastEditTime: 2022-10-08 07:34:33
 FilePath: /DMLF/config.py
 Description: 
 
 Copyright (c) 2022 by tibd, All Rights Reserved. 
 '''
 
+import os
+
 
 # 1. 定义数据目录
-ROOTDIR= r'''/home/shizhenkun/codebase/DMLF/'''
+ROOTDIR= f'{os.getcwd()}/'
 DATADIR = ROOTDIR +'data/'
 RESULTSDIR = ROOTDIR +'results/'
 MODELDIR = ROOTDIR +'model'
@@ -35,8 +37,15 @@ FILE_FEATURE_UNIREP = DIR_FEATURES + 'embd_unirep.feather'
 FILE_FEATURE_ESM0 = DIR_FEATURES + 'embd_esm0.feather'
 FILE_FEATURE_ESM32 = DIR_FEATURES + 'embd_esm32.feather'
 FILE_FEATURE_ESM33 = DIR_FEATURES + 'embd_esm33.feather'
+FILE_FEATURE_ONEHOT = DIR_FEATURES + 'embd_onehot.feather'
 
 
+FILE_TASK1_TRAIN = DIR_DATASETS + 'task1/train.feather'
+FILE_TASK1_TEST = DIR_DATASETS + 'task1/test.feather'
+FILE_TASK2_TRAIN = DIR_DATASETS + 'task2/train.feather'
+FILE_TASK2_TEST = DIR_DATASETS + 'task2/test.feather'
+FILE_TASK3_TRAIN = DIR_DATASETS + 'task3/train.feather'
+FILE_TASK3_TEST = DIR_DATASETS + 'task3/test.feather'
 
 
 TRAIN_FEATURE = DATADIR+'train.feather'

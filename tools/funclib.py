@@ -68,6 +68,8 @@ def dna_onehot(Xdna):
     return listtmp
 
 
+
+
 def lrmain(X_train_std, Y_train, X_test_std, Y_test, type='binary'):
     logreg = linear_model.LogisticRegression(
                                             solver = 'saga',

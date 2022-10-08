@@ -164,19 +164,16 @@ def load_data_embedding(train,test,embedding_type):
         return train, test
 
     if embedding_type==2:   #unirep
-        return train, test
+        feature = pd.read_feather(cfg.FILE_FEATURE_UNIREP)
 
     if embedding_type==3:   #esm0
-        tmptrain= pd.read_feather(cfg.DATADIR+'train_rep0.feather')  
-        tmptest= pd.read_feather(cfg.DATADIR+'test_rep0.feather')
+        feature = pd.read_feather(cfg.FILE_FEATURE_ESM0)
     
     if embedding_type ==4:  #esm32
-        tmptrain= pd.read_feather(cfg.DATADIR+'train_rep32.feather')  
-        tmptest= pd.read_feather(cfg.DATADIR+'test_rep32.feather')
+        feature = pd.read_feather(cfg.FILE_FEATURE_ESM32)
     
     if embedding_type ==5:  #esm33
-        tmptrain= pd.read_feather(cfg.DATADIR+'train_rep33.feather')  
-        tmptest= pd.read_feather(cfg.DATADIR+'test_rep33.feather')
+        feature = pd.read_feather(cfg.FILE_FEATURE_ESM33)
 
     train =train.iloc[:,np.r_[0:7]]
     test =test.iloc[:,np.r_[0:7]]

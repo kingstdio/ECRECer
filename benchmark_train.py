@@ -1,5 +1,6 @@
 from json import load
 from pickle import FALSE
+from production import step_by_step_run
 from tools.funclib import table2fasta
 import pandas as pd
 import numpy as np
@@ -175,11 +176,28 @@ def train_ec_slice(trainX, trainY, modelPath, force_model_update=False):
 if __name__ =="__main__":
 
     # 1. 读入数据
-    print('step 1 loading data')
+    print('step 0 loading feature data')
+    feature_unirep = pd.read_feather(cfg.FILE_FEATURE_UNIREP)
+    feature_esm0 = pd.read_feather(cfg.FILE_FEATURE_ESM0)
+    feature_esm32 = pd.read_feather(cfg.FILE_FEATURE_ESM32)
+    feature_esm33 = pd.read_feather(cfg.FILE_FEATURE_ESM33)
+
+    print('step 1 loading task data')
+    data_task1_train = pd.read_feather(cfg.FILE_TASK1_TRAIN)
+    data_task1_test = pd.read_feather(cfg.FILE_TASK1_TEST)
+    data_task2_train = pd.read_feather(cfg.FILE_TASK2_TRAIN)
+    data_task2_test = pd.read_feather(cfg.FILE_TASK2_TEST)
+    data_task3_train = pd.read_feather(cfg.FILE_TASK3_TRAIN)
+    data_task3_test = pd.read_feather(cfg.FILE_TASK3_TEST)
+
+
+    EMBEDDING_METHOD = 'esm32'
+
+
     train = pd.read_feather(cfg.TRAIN_FEATURE)
     test = pd.read_feather(cfg.TEST_FEATURE)
 
-    train,test= bcommon.load_data_embedding(train=train, test=test, embedding_type=cfg.EMBEDDING_METHOD.get('unirep'))
+    train,test= bcommon.load_data_embedding(train=train, test=test, embedding_type=cfg.EMBEDDING_METHOD.get(EMBEDDING_METHOD))
 
     # # 2. 写入fasta文件
 
