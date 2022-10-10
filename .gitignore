@@ -140,6 +140,7 @@ temp/
 *.tsv
 *.npy
 *.csv
+*.h5
 
 baselines/
 results/

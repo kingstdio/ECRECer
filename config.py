@@ -2,7 +2,7 @@
 Author: Zhenkun Shi
 Date: 2020-06-05 05:10:25
 LastEditors: Zhenkun Shi
-LastEditTime: 2022-10-08 07:34:33
+LastEditTime: 2022-10-10 01:41:35
 FilePath: /DMLF/config.py
 Description: 
 
@@ -47,6 +47,15 @@ FILE_TASK2_TEST = DIR_DATASETS + 'task2/test.feather'
 FILE_TASK3_TRAIN = DIR_DATASETS + 'task3/train.feather'
 FILE_TASK3_TEST = DIR_DATASETS + 'task3/test.feather'
 
+FILE_TASK1_TRAIN_FASTA = DIR_DATASETS +'task1/train.fasta'
+FILE_TASK1_TEST_FASTA = DIR_DATASETS +'task1/test.fasta'
+FILE_TASK2_TRAIN_FASTA = DIR_DATASETS +'task2/train.fasta'
+FILE_TASK2_TEST_FASTA = DIR_DATASETS +'task2/test.fasta'
+FILE_TASK3_TRAIN_FASTA = DIR_DATASETS +'task3/train.fasta'
+FILE_TASK3_TEST_FASTA = DIR_DATASETS +'task3/test.fasta'
+
+
+
 
 TRAIN_FEATURE = DATADIR+'train.feather'
 TEST_FEATURE = DATADIR+'test.feather'
@@ -78,6 +87,7 @@ FILE_BLAST_RESULTS = RESULTSDIR + r'test_blast_res.tsv'
 FILE_BLAST_ISENAYME_RESULTS = RESULTSDIR +r'isEnzyme_blast_results.tsv'
 FILE_BLAST_EC_RESULTS = RESULTSDIR +r'ec_blast_results.tsv'
 FILE_SLICE_ISENZYME_RESULTS = RESULTSDIR + 'isEnzyme_slice_results.tsv'
+
 FILE_SLICE_RESULTS = RESULTSDIR + 'slice_results.txt'
 FILE_INTE_RESULTS  =   RESULTSDIR+'slice_pred.tsv'
 FILE_DEEPEC_RESULTS = RESULTSDIR + r'deepec/DeepEC_Result.txt'
@@ -87,7 +97,7 @@ FILE_PRIAM_RESULTS = RESULTSDIR + R'priam/PRIAM_20210819134344/ANNOTATION/sequen
 
 FILE_EVL_RESULTS = RESULTSDIR + r'evaluation_table.xlsx'
 
-UPDATE_MODEL = True #强制模型更新标志
+UPDATE_MODEL = False #强制模型更新标志
 EMBEDDING_METHOD={  'one-hot':1, 
                     'unirep':2, 
                     'esm0':3, 
@@ -99,6 +109,7 @@ EMBEDDING_METHOD={  'one-hot':1,
 
 # 训练参数
 SAMPLING_BIT = 6 #采样精度
+
 
 FEATURE_SET ={  'one-hot':1,
                 'uni-rep':2,
@@ -113,8 +124,8 @@ TRAIN_USE_ONLY_ENZYME = True                    #只用酶数据进行训练
 TRAIN_BLAST_IDENTITY_THRES = 40                  #比对结果identity阈值
 
 # XGBoost
-TRAIN_ISENZYME_LEARNING_STEPS = 100             #是否是酶学习次数
-TRAIN_HOWMANY_ENZYME_LEARNING_STEPS = 100        #几功能酶学习次数
+TRAIN_ISENZYME_LEARNING_STEPS = 1000             #是否是酶学习次数
+TRAIN_HOWMANY_ENZYME_LEARNING_STEPS = 300        #几功能酶学习次数
 VALIDATION_RATE = 0.3 #模型训练时验证集的比例    
 
 

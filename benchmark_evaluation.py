@@ -83,7 +83,7 @@ def load_praim_res(resfile):
     Returns:
         [DataFrame]: [结果]
     """
-    f = open(cfg.FILE_PRIAM_RESULTS)
+    f = open(resfile)
     line = f.readline()
     counter =0
     reslist=[]

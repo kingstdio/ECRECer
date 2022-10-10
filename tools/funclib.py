@@ -266,7 +266,7 @@ def getblast(train, test):
     table2fasta(train, '/tmp/train.fasta')
     table2fasta(test, '/tmp/test.fasta')
     
-    cmd1 = r'diamond makedb --in /tmp/train.fasta -d /tmp/train.dmnd'
+    cmd1 = r'diamond makedb --in /tmp/train.fasta -d /tmp/train.dmnd --quiet'
     cmd2 = r'diamond blastp -d /tmp/train.dmnd  -q  /tmp/test.fasta -o /tmp/test_fasta_results.tsv -b5 -c1 -k 1 --quiet'
     cmd3 = r'rm -rf /tmp/*.fasta /tmp/*.dmnd /tmp/*.tsv'
     print(cmd1)

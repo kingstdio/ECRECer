@@ -157,32 +157,35 @@ def blast_add_label(blast_df, trainset,):
     return res_df.iloc[:,np.r_[0,13:16]]
 #endregion
 
+#region loading embedding features
+def load_data_embedding(embedding_type):
+    """loading embedding features
 
-def load_data_embedding(train,test,embedding_type):
+    Args:
+        embedding_type (string): one of ['one-hot', 'unirep', 'esm0', 'esm32', 'esm33']
 
-    if embedding_type==1:   #one-hot
-        return train, test
+    Returns:
+        DataFrame: features
+    """
 
-    if embedding_type==2:   #unirep
+    if embedding_type=='one-hot':   #one-hot
+        feature = pd.read_feather(cfg.FILE_FEATURE_ONEHOT)
+
+    if embedding_type=='unirep':   #unirep
         feature = pd.read_feather(cfg.FILE_FEATURE_UNIREP)
 
-    if embedding_type==3:   #esm0
+    if embedding_type=='esm0':   #esm0
         feature = pd.read_feather(cfg.FILE_FEATURE_ESM0)
     
-    if embedding_type ==4:  #esm32
+    if embedding_type =='esm32':  #esm32
         feature = pd.read_feather(cfg.FILE_FEATURE_ESM32)
     
-    if embedding_type ==5:  #esm33
+    if embedding_type =='esm33':  #esm33
         feature = pd.read_feather(cfg.FILE_FEATURE_ESM33)
 
-    train =train.iloc[:,np.r_[0:7]]
-    test =test.iloc[:,np.r_[0:7]]
-    train = train.merge(tmptrain, how='left', on='id')
-    test = test.merge(tmptest, how='left', on='id')
-    train.reset_index(drop=True, inplace=True)
-    test.reset_index(drop=True, inplace=True)
+    return feature
+#endregion
 
-    return train, test
 
 
 def get_blast_prediction(reference_db, train_frame, test_frame, results_file, identity_thres=0.2):
