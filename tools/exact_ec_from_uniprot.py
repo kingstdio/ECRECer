@@ -40,7 +40,7 @@ def read_file_from_gzip(file_in_path, file_out_path, extract_type, save_file_typ
     with gzip.open(file_in_path, "rt") as handle:
         file_write_obj.writelines('\t'.join(table_head))
         file_write_obj.writelines('\n')
-        for record in tqdm( SeqIO.parse(handle, 'swiss')):
+        for record in tqdm( SeqIO.parse(handle, 'swiss'), position=1, leave=True):
             res = process_record(record, extract_type= extract_type)
             counter+=1
             if counter %10==0:

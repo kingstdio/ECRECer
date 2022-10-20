@@ -2,7 +2,7 @@
 Author: Zhenkun Shi
 Date: 2020-06-05 05:10:25
 LastEditors: Zhenkun Shi
-LastEditTime: 2022-10-10 01:41:35
+LastEditTime: 2022-10-19 09:34:09
 FilePath: /DMLF/config.py
 Description: 
 
@@ -24,13 +24,16 @@ DIR_FEATURES = DATADIR + 'featureBank/'
 
 
 #2.URL
-URL_SPROT_SNAP201802=f'https://ftp.uniprot.org/pub/databases/uniprot/previous_releases/release-2018_02/knowledgebase/uniprot_sprot-only2018_02.tar.gz'
-URL_SPROT_SNAP202202=f'https://ftp.uniprot.org/pub/databases/uniprot/previous_releases/release-2022_02/knowledgebase/uniprot_sprot-only2022_02.tar.gz'
+URL_SPROT_SNAP201802 = f'https://ftp.uniprot.org/pub/databases/uniprot/previous_releases/release-2018_02/knowledgebase/uniprot_sprot-only2018_02.tar.gz'
+URL_SPROT_SNAP202006 = f'https://ftp.uniprot.org/pub/databases/uniprot/previous_releases/release-2020_06/knowledgebase/uniprot_sprot-only2020_06.tar.gz'
+URL_SPROT_SNAP202202 = f'https://ftp.uniprot.org/pub/databases/uniprot/previous_releases/release-2022_02/knowledgebase/uniprot_sprot-only2022_02.tar.gz'
 URL_SPROT_LATEST=f'https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.dat.gz'
 
 #3.FILES
 FILE_SPROT_SNAP201802=DIR_UNIPROT+'uniprot_sprot-only2018_02.tar.gz'
+FILE_SPROT_SNAP202006=DIR_UNIPROT+'uniprot_sprot-only2020_06.tar.gz'
 FILE_SPROT_SNAP202202=DIR_UNIPROT+'uniprot_sprot-only2022_02.tar.gz'
+
 FILE_SPROT_LATEST=DIR_UNIPROT+'uniprot_sprot_leatest.dat.gz'
 
 FILE_FEATURE_UNIREP = DIR_FEATURES + 'embd_unirep.feather'
@@ -41,18 +44,29 @@ FILE_FEATURE_ONEHOT = DIR_FEATURES + 'embd_onehot.feather'
 
 
 FILE_TASK1_TRAIN = DIR_DATASETS + 'task1/train.feather'
-FILE_TASK1_TEST = DIR_DATASETS + 'task1/test.feather'
+FILE_TASK1_TEST_2020 = DIR_DATASETS + 'task1/test_2020.feather'
+FILE_TASK1_TEST_2022 = DIR_DATASETS + 'task1/test_2022.feather'
+
 FILE_TASK2_TRAIN = DIR_DATASETS + 'task2/train.feather'
-FILE_TASK2_TEST = DIR_DATASETS + 'task2/test.feather'
+FILE_TASK2_TEST_2020 = DIR_DATASETS + 'task2/test_2020.feather'
+FILE_TASK2_TEST_2022 = DIR_DATASETS + 'task2/test_2022.feather'
+
+
 FILE_TASK3_TRAIN = DIR_DATASETS + 'task3/train.feather'
-FILE_TASK3_TEST = DIR_DATASETS + 'task3/test.feather'
+FILE_TASK3_TEST_2020 = DIR_DATASETS + 'task3/test_2020.feather'
+FILE_TASK3_TEST_2022 = DIR_DATASETS + 'task3/test_2022.feather'
 
 FILE_TASK1_TRAIN_FASTA = DIR_DATASETS +'task1/train.fasta'
-FILE_TASK1_TEST_FASTA = DIR_DATASETS +'task1/test.fasta'
+FILE_TASK1_TEST_2020_FASTA = DIR_DATASETS +'task1/test_2020.fasta'
+FILE_TASK1_TEST_2022_FASTA = DIR_DATASETS +'task1/test_2022.fasta'
+
 FILE_TASK2_TRAIN_FASTA = DIR_DATASETS +'task2/train.fasta'
-FILE_TASK2_TEST_FASTA = DIR_DATASETS +'task2/test.fasta'
+FILE_TASK2_TEST_2020_FASTA = DIR_DATASETS +'task2/test_2020.fasta'
+FILE_TASK2_TEST_2022_FASTA = DIR_DATASETS +'task2/test.fasta'
+
 FILE_TASK3_TRAIN_FASTA = DIR_DATASETS +'task3/train.fasta'
-FILE_TASK3_TEST_FASTA = DIR_DATASETS +'task3/test.fasta'
+FILE_TASK3_TEST_2020_FASTA = DIR_DATASETS +'task3/test_2020.fasta'
+FILE_TASK3_TEST_2022_FASTA = DIR_DATASETS +'task3/test_2022.fasta'
 
 
 

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-import os
+import os,string, random
+from datetime import datetime
 import config as cfg
 
 
@@ -206,7 +207,85 @@ def get_blast_prediction(reference_db, train_frame, test_frame, results_file, id
 
     return res_df.iloc[:,np.r_[0,2,13:17]]
     
+#region 读取cdhit聚类结果
+def get_cdhit_results(cdhit_clstr_file):
+    """读取cdhit聚类结果
 
+    Args:
+        cdhit_clstr_file (string): 聚类结果文件
+
+    Returns:
+        DataFrame: ['cluster_id','uniprot_id','identity'， 'is_representative']
+    """
+    counter = 0
+    res = []
+    with open(cdhit_clstr_file,'r') as f:
+        for line in f:
+            if 'Cluster' in line:
+                cluster_id = line.replace('>Cluster','').replace('\n', '').strip()
+                continue
+            str_uids= line.replace('\n','').split('>')[1].replace('at ','').split('... ')
+                        
+            if '*' in str_uids[1]:
+                identity = 1
+                isrep = True
+            else:
+                identity = float(str_uids[1].strip('%')) /100
+                isrep = False
+
+            res = res +[[cluster_id, str_uids[0], identity, isrep ]]
+
+    resdf = pd.DataFrame(res, columns=['cluster_id','uniprot_id','identity', 'is_representative']) #转换为DataFrame
+    return resdf
+#endregion
+
+def pycdhit(uniportid_seq_df, identity=0.4, thred_num=4):
+    """CD-HIT 序列聚类
+
+    Args:
+        uniportid_seq_df (DataFrame): [uniprot_id, seq] 蛋白DataFrame
+        identity (float, optional): 聚类阈值. Defaults to 0.4.
+        thred_num (int, optional): 聚类线程数. Defaults to 4.
+
+    Returns:
+        聚类结果 DataFrame: [cluster_id,uniprot_id,identity,is_representative,cluster_size]
+    """
+    if identity>=0.7:
+        word_size = 5
+    elif identity>=0.6:
+        word_size = 4
+    elif identity >=0.5:
+        word_size = 3
+    elif identity >=0.4:
+        word_size =2
+    else:
+        word_size = 5
+
+    # 定义输入输出文件名
+
+
+    
+    time_stamp_str = datetime.now().strftime("%Y-%m-%d_%H_%M_%S_")+''.join(random.sample(string.ascii_letters + string.digits, 16))
+    cd_hit_fasta = f'{cfg.TEMPDIR}cdhit_test_{time_stamp_str}.fasta'
+    cd_hit_results = f'{cfg.TEMPDIR}cdhit_results_{time_stamp_str}'
+    cd_hit_cluster_res_file =f'{cfg.TEMPDIR}cdhit_results_{time_stamp_str}.clstr'
+
+    # 写聚类fasta文件
+    save_table2fasta(uniportid_seq_df, cd_hit_fasta)
+
+    # cd-hit聚类
+    cmd = f'cd-hit -i {cd_hit_fasta} -o {cd_hit_results} -c {identity} -n {word_size} -T {thred_num} -M 0 -g 1 -sc 1 -sf 1 > /dev/null 2>&1'
+    os.system(cmd)
+    cdhit_cluster = get_cdhit_results(cdhit_clstr_file=cd_hit_cluster_res_file)
+
+    cluster_size = cdhit_cluster.cluster_id.value_counts()
+    cluster_size = pd.DataFrame({'cluster_id':cluster_size.index,'cluster_size':cluster_size.values})
+    cdhit_cluster = cdhit_cluster.merge(cluster_size, on='cluster_id', how='left')
+    
+    cmd = f'rm -f {cd_hit_fasta} {cd_hit_results} {cd_hit_cluster_res_file}'
+    os.system(cmd)
+
+    return cdhit_cluster
 
 #region 打印模型的重要指标，排名topN指标
 def importance_features_top(model, x_train, topN=10):

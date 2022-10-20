@@ -108,17 +108,32 @@ def xgmain(X_train_std, Y_train, X_test_std, Y_test, type='binary', vali=True):
     eval_set = [(x_train, y_train), (x_vali, y_vali)]
 
     if type=='binary':
+        # model = XGBClassifier(
+        #                         objective='binary:logistic', 
+        #                         random_state=15, 
+        #                         use_label_encoder=False, 
+        #                         n_jobs=-1, 
+        #                         eval_metric='mlogloss',
+        #                         min_child_weight=15, 
+        #                         max_depth=15, 
+        #                         n_estimators=300,
+        #                         tree_method = 'gpu_hist',
+        #                         learning_rate = 0.01
+        #                     )
         model = XGBClassifier(
                                 objective='binary:logistic', 
-                                random_state=15, 
+                                random_state=13, 
                                 use_label_encoder=False, 
-                                n_jobs=-1, 
-                                eval_metric='mlogloss',
-                                min_child_weight=15, 
-                                max_depth=15, 
-                                n_estimators=300
+                                n_jobs=-2, 
+                                eval_metric='auc',
+                                max_depth=6,
+                                n_estimators= 300,
+                                tree_method = 'gpu_hist',
+                                learning_rate = 0.01,
+                                gpu_id=0
                             )
-        model.fit(x_train, y_train.ravel(), eval_metric="logloss", eval_set=eval_set, verbose=False)
+        model.fit(x_train, y_train, eval_set=eval_set, verbose=False)
+        # model.fit(t1_x_train, t1_y_train,  eval_set=t1_eval_set, verbose=100)
     if type=='multi':
         model = XGBClassifier(
                         min_child_weight=6, 
