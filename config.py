@@ -1,8 +1,8 @@
 '''
 Author: Zhenkun Shi
 Date: 2020-06-05 05:10:25
-LastEditors: Zhenkun Shi
-LastEditTime: 2022-11-17 13:23:12
+LastEditors: Zhenkun Shi kingstdio@gmail.com
+LastEditTime: 2023-01-17 03:45:57
 FilePath: /DMLF/config.py
 Description: 
 
@@ -85,6 +85,7 @@ FILE_TASK3_TEST_2021_FASTA = DIR_DATASETS +'task3/test_2021.fasta'
 FILE_TASK3_TEST_2022_FASTA = DIR_DATASETS +'task3/test_2022.fasta'
 
 
+FILE_CASE_SHEWANELLA_FASTA=DATADIR+'shewanella.faa'
 
 
 TRAIN_FEATURE = DATADIR+'train.feather'

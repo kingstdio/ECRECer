@@ -495,3 +495,66 @@ def load_fasta_to_table(file):
     input_df = pd.DataFrame(input_data, columns=['id','seq'])
     return input_df
 
+def load_deepec_resluts(filepath):
+    """load deepec predicted resluts
+
+    Args:
+        filepath (string): deepec predicted file
+
+    Returns:
+        DataFrame: columns=['id', 'ec_deepec']
+    """
+    res_deepec = pd.read_csv(f'{filepath}', sep='\t',names=['id', 'ec_number'], header=0 )
+    res_deepec.ec_number=res_deepec.apply(lambda x: x['ec_number'].replace('EC:',''), axis=1)
+    res_deepec.columns = ['id','ec_deepec']
+    res = []
+    for index, group in  res_deepec.groupby('id'):
+        if len(group)==1:
+            res = res + [[group.id.values[0], group.ec_deepec.values[0]]]
+        else:
+            ecs_str = ','.join(group.ec_deepec.values)
+            res = res +[[group.id.values[0],ecs_str]] 
+    res_deepec = pd.DataFrame(res, columns=['id', 'ec_deepec'])
+    return res_deepec
+
+
+#region
+def load_praim_res(resfile):
+    """[加载PRIAM的预测结果]
+    Args:
+        resfile ([string]): [结果文件]
+    Returns:
+        [DataFrame]: [结果]
+    """
+    f = open(resfile)
+    line = f.readline()
+    counter =0
+    reslist=[]
+    lstr =''
+    subec=[]
+    while line:
+        if '>' in line:
+            if counter !=0:
+                reslist +=[[lstr, ', '.join(subec)]]
+                subec=[]
+            lstr = line.replace('>', '').replace('\n', '')
+        elif line.strip()!='':
+            ecarray = line.split('\t')
+            subec += [(ecarray[0].replace('#', '').replace('\n', '').replace(' ', '') )]
+
+        line = f.readline()
+        counter +=1
+    f.close()
+    res_priam=pd.DataFrame(reslist, columns=['id', 'ec_priam'])
+    return res_priam
+#endregion
+
+def load_catfam_res(resfile):
+    res_catfam = pd.read_csv(resfile, sep='\t', names=['id', 'ec_catfam'])
+    return res_catfam
+
+
+def load_ecpred_res(resfile):
+    res_ecpred = pd.read_csv(f'{resfile}', sep='\t', header=0)
+    res_ecpred = res_ecpred.rename(columns={'Protein ID':'id','EC Number':'ec_ecpred','Confidence Score(max 1.0)':'pident_ecpred'})
+    return res_ecpred
