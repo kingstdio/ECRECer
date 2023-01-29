@@ -557,4 +557,5 @@ def load_catfam_res(resfile):
 def load_ecpred_res(resfile):
     res_ecpred = pd.read_csv(f'{resfile}', sep='\t', header=0)
     res_ecpred = res_ecpred.rename(columns={'Protein ID':'id','EC Number':'ec_ecpred','Confidence Score(max 1.0)':'pident_ecpred'})
+    res_ecpred['ec_ecpred']= res_ecpred.ec_ecpred.apply(lambda x : '-' if x=='non Enzyme' else x) 
     return res_ecpred
