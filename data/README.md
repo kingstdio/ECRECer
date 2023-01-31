@@ -10,5 +10,5 @@
 -->
 # DATA FOLDER
 
-Bechmark task data set can be downloaded from google drive.
+Bechmark task data set can be downloaded from MS onedrive.
 URL: https://mailsjlueducn-my.sharepoint.com/:f:/g/personal/shizk14_mails_jlu_edu_cn/EnGcWKNFIB1LvFWmWhXUbxsBXNKbkenHKFZ6kwszlU600w?e=OAuWvm
