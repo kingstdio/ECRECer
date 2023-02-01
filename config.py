@@ -1,8 +1,8 @@
 '''
 Author: Zhenkun Shi
 Date: 2020-06-05 05:10:25
-LastEditors: Zhenkun Shi kingstdio@gmail.com
-LastEditTime: 2023-01-17 03:45:57
+LastEditors: Zhenkun Shi
+LastEditTime: 2023-02-01 05:03:06
 FilePath: /DMLF/config.py
 Description: 
 
@@ -147,17 +147,6 @@ FEATURE_SET ={  'one-hot':1,
                 'esm':3
             }
 
-# SLICE
-FEATURE_NUM = 1900
-TRAIN_USE_ONLY_SINGLE_FUNCTION = False           #只用单功能酶
-TRAIN_USE_SPCIFIC_EC_LEVEL = 2                  #训练用ec级别大于n位的
-TRAIN_USE_ONLY_ENZYME = True                    #只用酶数据进行训练
-TRAIN_BLAST_IDENTITY_THRES = 40                  #比对结果identity阈值
-
-# XGBoost
-TRAIN_ISENZYME_LEARNING_STEPS = 1000             #是否是酶学习次数
-TRAIN_HOWMANY_ENZYME_LEARNING_STEPS = 300        #几功能酶学习次数
-VALIDATION_RATE = 0.3 #模型训练时验证集的比例    
 
 
 #

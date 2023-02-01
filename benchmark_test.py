@@ -198,11 +198,14 @@ def run_integrage(slice_pred, dict_ec_transfer):
 
 if __name__ == '__main__':
 
+    EMBEDDING_METHOD = 'esm32'
+    TESTSET='test2019'
+
     # 1. 读入数据
     print('step 1: loading data')
     train = pd.read_feather(cfg.TRAIN_FEATURE)
     test = pd.read_feather(cfg.TEST_FEATURE)
-    train,test= bcommon.load_data_embedding(train=train, test=test, embedding_type=cfg.EMBEDDING_METHOD.get('unirep'))
+    train,test= bcommon.load_data_embedding(train=train, test=test, embedding_type=EMBEDDING_METHOD)
     train = train.iloc[:,:7]
 
     dict_ec_label = np.load(cfg.FILE_EC_LABEL_DICT, allow_pickle=True).item() #EC-标签字典
