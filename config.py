@@ -2,7 +2,7 @@
 Author: Zhenkun Shi
 Date: 2020-06-05 05:10:25
 LastEditors: Zhenkun Shi
-LastEditTime: 2023-02-01 05:03:06
+LastEditTime: 2023-02-03 06:22:35
 FilePath: /DMLF/config.py
 Description: 
 
@@ -21,6 +21,7 @@ TEMPDIR =ROOTDIR +'tmp/'
 DIR_UNIPROT = DATADIR + 'uniprot/'
 DIR_DATASETS = DATADIR +'datasets/'
 DIR_FEATURES = DATADIR + 'featureBank/'
+DIR_DICT = DATADIR +'dict/'
 
 
 #2.URL
@@ -99,10 +100,7 @@ FILE_LATEST_TREMBL = DATADIR + 'uniprot_trembl_latest.dat.gz'
 FILE_LATEST_SPROT_FEATHER = DATADIR + 'latest_sprot.feather'
 FILE_LATEST_TREMBL_FEATHER = DATADIR + 'latest_trembl.feather'
 
-FILE_SLICE_TRAINX = DATADIR + 'slice_train_x.txt'
-FILE_SLICE_TRAINY  = DATADIR + 'slice_train_y.txt'
-FILE_SLICE_TESTX = DATADIR + 'slice_test_x.txt'
-FILE_SLICE_TESTY  = DATADIR + 'slice_test_y.txt'
+
 FILE_EC_LABEL_DICT = DATADIR + 'ec_label_dict.npy'
 FILE_BLAST_TRAIN_DB = DATADIR + 'train_blast.dmnd' # blast比对数据库
 FILE_BLAST_PRODUCTION_DB = DATADIR + 'production_blast.dmnd' # 生产环境比对数据库
@@ -110,17 +108,17 @@ FILE_BLAST_PRODUCTION_FASTA = DATADIR + 'production_blast.fasta' # 生产环境�
 FILE_TRANSFER_DICT = DATADIR + 'ec_transfer_dict.npy'
 
 
-ISENZYME_MODEL = MODELDIR+'/isenzyme.model'
-HOWMANY_MODEL = MODELDIR+'/howmany_enzyme.model'
+
+ISENZYME_MODEL = MODELDIR+'/isenzyme.h5'
+HOWMANY_MODEL = MODELDIR+'/howmany_enzyme.h5'
+EC_MODEL = MODELDIR+'/ec.h5'
 
 
 FILE_BLAST_RESULTS = RESULTSDIR + r'test_blast_res.tsv'
 FILE_BLAST_ISENAYME_RESULTS = RESULTSDIR +r'isEnzyme_blast_results.tsv'
 FILE_BLAST_EC_RESULTS = RESULTSDIR +r'ec_blast_results.tsv'
-FILE_SLICE_ISENZYME_RESULTS = RESULTSDIR + 'isEnzyme_slice_results.tsv'
 
-FILE_SLICE_RESULTS = RESULTSDIR + 'slice_results.txt'
-FILE_INTE_RESULTS  =   RESULTSDIR+'slice_pred.tsv'
+
 FILE_DEEPEC_RESULTS = RESULTSDIR + r'deepec/DeepEC_Result.txt'
 FILE_ECPRED_RESULTS = RESULTSDIR + r'ecpred/ecpred.tsv'
 FILE_CATFAM_RESULTS = RESULTSDIR + r'catfam_results.output'
@@ -128,25 +126,13 @@ FILE_PRIAM_RESULTS = RESULTSDIR + R'priam/PRIAM_20210819134344/ANNOTATION/sequen
 
 FILE_EVL_RESULTS = RESULTSDIR + r'evaluation_table.xlsx'
 
-UPDATE_MODEL = False #强制模型更新标志
+UPDATE_MODEL = True #强制模型更新标志
 EMBEDDING_METHOD={  'one-hot':1, 
                     'unirep':2, 
                     'esm0':3, 
                     'esm32':4, 
                     'esm33':5
                 }
-
-
-
-# 训练参数
-SAMPLING_BIT = 6 #采样精度
-
-
-FEATURE_SET ={  'one-hot':1,
-                'uni-rep':2,
-                'esm':3
-            }
-
 
 
 #
@@ -163,3 +149,8 @@ BLAST_TABLE_HEAD = ['id',
                     'evalue', 
                     'bitscore'
                     ]
+
+
+DICT_LABEL_T1 = DIR_DICT+'dict_label_task1.h5'
+DICT_LABEL_T2 = DIR_DICT+'dict_label_task2.h5'
+DICT_LABEL_T3 = DIR_DICT+'dict_label_task3.h5'

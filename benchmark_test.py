@@ -62,7 +62,6 @@ def get_slice_res(slice_query_file, model_path, dict_ec_label,test_set, res_file
 
     return slice_pred_ec
 
-
 # endregion
 
 #region 将slice的实验结果排序，并按照推荐顺序以两个矩阵的形式返回

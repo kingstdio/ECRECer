@@ -5,6 +5,9 @@ import re
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
+import sys
+sys.path.insert(0, "../../")
+import config as cfg
 
 
 # region 将字符串拆分成固定长度

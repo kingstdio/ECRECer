@@ -4,74 +4,6 @@ import os,string, random
 from datetime import datetime
 import config as cfg
 
-
-#region 准备Slice使用的文件
-def prepare_slice_file(x_data, y_data, x_file, y_file, ec_label_dict):
-    """
-    准备Slice使用的文件
-    Args:
-        x_data: X数据
-        y_data: Y数据
-        x_file: X文件路径
-        y_file: Y文件路径
-        ec_label_dict: EC转标签字典
-
-    Returns:
-
-    """
-    if (os.path.exists(x_file) == False) or (cfg.UPDATE_MODEL ==True):
-         to_file_matrix(file=x_file, ds=x_data.round(cfg.SAMPLING_BIT), col_num=cfg.FEATURE_NUM, stype='feature')
-
-    if (os.path.exists(y_file) == False) or (cfg.UPDATE_MODEL ==True):
-        with pd.option_context('mode.chained_assignment', None): 
-            y_data['tags'] = 1
-        to_file_matrix(
-            file=y_file,
-            ds=y_data,
-            col_num=max(ec_label_dict.values()),
-            stype='label'
-        )
-
-    print('slice files prepared success')
-
-def prepare_slice_file_onlyx(x_data, x_file):
-    """
-    准备Slice使用的文件
-    Args:
-        x_data: X数据
-        x_file: X文件路径
-
-    Returns:
-
-    """
-    if (os.path.exists(x_file) == False) or (cfg.UPDATE_MODEL ==True):
-         to_file_matrix(file=x_file, ds=x_data.round(cfg.SAMPLING_BIT), col_num=cfg.FEATURE_NUM, stype='feature')
-
-    print('slice files prepared success')   
-#endregion
-
-#region 创建slice需要的数据文件
-def to_file_matrix(file, ds, col_num, stype='label'):
-    """[创建slice需要的数据文件]
-    Args:
-        file ([string]): [要保存的文件名]
-        ds ([DataFrame]): [数据]
-        col_num ([int]): [有多少列]
-        stype (str, optional): [文件类型：feature，label]. Defaults to 'label'.
-    """
-    if os.path.exists(file) & (cfg.UPDATE_MODEL ==False):
-        return 'file exist'
-    
-    if stype== 'label':
-        seps = ':'
-    if stype == 'feature':
-        seps = ' '
-    ds.to_csv(file, index= 0, header =0 , sep= seps)
-
-    cmd ='''sed -i '1i {0} {1}' {2}'''.format(len(ds), col_num, file)
-    os.system(cmd)
-#endregion
-
 # region 需要写fasta的dataFame格式
 def save_table2fasta(dataset, file_out):
     """[summary]
@@ -86,8 +18,6 @@ def save_table2fasta(dataset, file_out):
             file.write('{0}\n'.format(row['seq']))
         file.close()
     print('Write finished')
-
-
 # endregion
 
 # region 获取序列比对结果
@@ -118,8 +48,6 @@ def getblast(ref_fasta, query_fasta, results_file):
     res_data = pd.read_csv(results_file, sep='\t', names=cfg.BLAST_TABLE_HEAD)
     os.system(cmd3)
     return res_data
-
-
 # endregion
 
 #region 创建diamond数据库
@@ -186,7 +114,6 @@ def load_data_embedding(embedding_type):
 
     return feature
 #endregion
-
 
 
 def get_blast_prediction(reference_db, train_frame, test_frame, results_file, identity_thres=0.2):
