@@ -7,21 +7,18 @@ import config as cfg
 import benchmark_test as btest
 import argparse
 import tools.funclib as funclib
+from tools.Attention import Attention
+from keras.models import load_model
 import tools.embedding_esm as esmebd
 import time
 from pandarallel import pandarallel #  import pandaralle
 
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-i', help='input file （fasta format）', type=str, default=cfg.DATADIR + 'test.fasta')
-parser.add_argument('-o', help='output file （tsv table）', type=str, default=cfg.RESULTSDIR + 'ec_res.tsv')
-parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation', type=str, default='r')
-parser.add_argument('-topk', help='recommendation records, min=1, max=20', type=int, default='5')
 
 
 #region Integrate output
-def integrate_out_put(existing_table, blast_table, isEnzyme_pred_table, how_many_table, ec_table, mode='p', topnum=1):
+def integrate_out_put(existing_table, blast_table, dmlf_pred_table, mode='p', topnum=1):
     """[Integrate output]
 
     Args:
@@ -187,10 +184,9 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
     # 2. 查找数据
     print('step 2: find existing data')
     find_data =input_df.merge(latest_sprot, on='seq', how='left')
-    exist_data= find_data[~find_data.id_y.isnull()].iloc[:,np.r_[0,2,1,12,7,9:12]].rename(columns={'id_x':'id','id_y':'id_uniprot'})
-    noExist_data = find_data[find_data.name.isnull()]
-    noExist_data.reset_index(drop=True, inplace=True)
-    noExist_data = noExist_data.iloc[:,np.r_[0,2,1,12,7,9:12]].rename(columns={'id_x':'id','id_y':'id_uniprot'})
+    find_data=latest_sprot[latest_sprot.seq.isin(input_df.seq)]
+    exist_data = find_data.merge(input_df, on='seq', how='left').iloc[:,np.r_[8,0,1:8]].rename(columns={'id_x':'uniprot_id','id_y':'input_id'}).reset_index(drop=True)
+    noExist_data = input_df[~input_df.seq.isin(find_data.seq)]
 
     if len(noExist_data) == 0:
         exist_data.to_csv(output_tsv, sep='\t')
@@ -211,63 +207,79 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         funclib.table2fasta(latest_sprot, cfg.FILE_BLAST_PRODUCTION_FASTA)
         cmd = r'diamond makedb --in {0} -d {1}'.format(cfg.FILE_BLAST_PRODUCTION_FASTA, cfg.FILE_BLAST_PRODUCTION_DB)
         os.system(cmd)
+
     if mode =='p':
         blast_res = funclib.getblast_usedb(db=cfg.FILE_BLAST_PRODUCTION_DB, test=noExist_data)
     if mode == 'r':
         blast_res = funclib.getblast_usedb(db=cfg.FILE_BLAST_PRODUCTION_DB, test=input_df)
-    blast_res = blast_res[['id', 'sseqid']].merge(latest_sprot, left_on='sseqid', right_on='id', how='left').iloc[:,np.r_[0,2:14]]
-    blast_res = blast_res.iloc[:,np.r_[0,1,11,12,6,8:11]].rename(columns={'id_x':'id','id_y':'id_uniprot'})
+
+    blast_res =blast_res[['id', 'sseqid']].merge(latest_sprot, left_on='sseqid', right_on='id', how='left').iloc[:,np.r_[0,2,3:10]].rename(columns={'id_x':'input_id','id_y':'uniprot_id'}).reset_index(drop=True)
 
     # 5. isEnzyme Prediction
     print('step 5: predict isEnzyme')
-    model_isEnzyme = joblib.load(cfg.ISENZYME_MODEL)
-    pred_isEnzyme = pd.DataFrame()
-    pred_isEnzyme['id']=rep32.id
-    pred_isEnzyme['isEnzyme_pred'] = model_isEnzyme.predict(rep32.iloc[:,1:])
+    pred_dmlf = pd.DataFrame(rep32.id.copy())
+    model_isEnzyme = load_model(cfg.ISENZYME_MODEL,custom_objects={"Attention": Attention}, compile=False)
+    predicted = model_isEnzyme.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+    encoder_t1=joblib.load(cfg.DICT_LABEL_T1)
+    pred_dmlf['dmlf_isEnzyme']=(encoder_t1.inverse_transform(bcommon.props_to_onehot(predicted))).reshape(1,-1)[0]
+
 
     # 6. How many Prediction
     print('step 6: predict function counts')
-    pred_howmany = predict_function_counts(rep32)
+    model_howmany = load_model(cfg.HOWMANY_MODEL,custom_objects={"Attention": Attention}, compile=False)
+    predicted = model_howmany.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+    encoder_t2=joblib.load(cfg.DICT_LABEL_T2)
+    pred_dmlf['dmlf_howmany']=(encoder_t2.inverse_transform(bcommon.props_to_onehot(predicted))).reshape(1,-1)[0]
 
 
     # 7. EC Prediction
     print('step 7: predict EC')
-    pred_ec = predict_ec_slice(test_data=rep32)
-    if mode=='p':
-        pred_ec = noExist_data[['id','seq']].merge(pred_ec, on='id', how='left')
-    if mode == 'r':
-        pred_ec = input_df[['id', 'seq']].merge(pred_ec, on='id', how='left')
-    
-    pred_ec['seqlength']=pred_ec.seq.parallel_apply(lambda x: len(x) )
+    model_ec = load_model(cfg.EC_MODEL,custom_objects={"Attention": Attention}, compile=False)
+    predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+    encoder_t3=joblib.load(cfg.DICT_LABEL_T3)
+    pred_dmlf['dmlf_ec']=[','.join(item) for item in (encoder_t3.inverse_transform(bcommon.props_to_onehot(predicted)))]
 
     print('step 8: integrate results')
 
-    output_df = integrate_out_put(existing_table=exist_data,
-                                  blast_table=blast_res,
-                                  isEnzyme_pred_table = pred_isEnzyme, 
-                                  how_many_table = pred_howmany, 
-                                  ec_table = pred_ec,
-                                  mode=mode,
-                                  topnum=topnum
-                                )
-    print('step 9: writting results')                
-    output_df.to_csv(output_tsv, sep='\t', index=False)
+    # output_df = integrate_out_put(existing_table=exist_data,
+    #                               blast_table=blast_res,
+    #                               dmlf_pred_table = pred_dmlf,
+    #                               mode=mode,
+    #                               topnum=topnum
+    #                             )  
+    results = pred_dmlf.merge(exist_data, left_on='id',right_on='input_id', how='left') 
+    results=results.fillna('#')
+    results['ec_pred'] =results.apply(lambda x : x.ec_number if x.ec_number!='#' else ('-' if x.dmlf_isEnzyme==False else x.dmlf_ec) ,axis=1)
+    output_df = results[['id', 'ec_pred']].rename(columns={'id':'id_input'})
 
+    print('step 9: writting results') 
+
+    output_df.to_csv(output_tsv, sep='\t', index=False)
+    
     end = time.process_time()
     print('All done running time: %s Seconds'%(end-start))
 #endregion
 
 
 if __name__ =='__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', help='input file （fasta format）', type=str, default=cfg.DATADIR + 'sample_25.fasta')
+    parser.add_argument('-o', help='output file （tsv table）', type=str, default=cfg.RESULTSDIR + 'ec_res20230206.tsv')
+    parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation', type=str, default='r')
+    parser.add_argument('-topk', help='recommendation records, min=1, max=20', type=int, default='5')
+
     pandarallel.initialize() #init
     args = parser.parse_args()
     input_file = args.i
     output_file = args.o
     compute_mode = args.mode
     topk = args.topk
+    compute_mode = 'r'
     
     step_by_step_run(   input_fasta=input_file, 
                         output_tsv=output_file, 
                         mode=compute_mode, 
                         topnum=topk
                     )
+    

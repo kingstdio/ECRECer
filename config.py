@@ -2,7 +2,7 @@
 Author: Zhenkun Shi
 Date: 2020-06-05 05:10:25
 LastEditors: Zhenkun Shi
-LastEditTime: 2023-02-03 06:22:35
+LastEditTime: 2023-02-06 05:11:51
 FilePath: /DMLF/config.py
 Description: 
 
@@ -97,13 +97,13 @@ TEST_FASTA = DATADIR+'test.fasta'
 FILE_LATEST_SPROT = DATADIR + 'uniprot_sprot_latest.dat.gz'
 FILE_LATEST_TREMBL = DATADIR + 'uniprot_trembl_latest.dat.gz'
 
-FILE_LATEST_SPROT_FEATHER = DATADIR + 'latest_sprot.feather'
-FILE_LATEST_TREMBL_FEATHER = DATADIR + 'latest_trembl.feather'
+FILE_LATEST_SPROT_FEATHER = DATADIR + 'uniprot/sprot_latest.feather'
+FILE_LATEST_TREMBL_FEATHER = DATADIR + 'uniprot/trembl_latest.feather'
 
 
 FILE_EC_LABEL_DICT = DATADIR + 'ec_label_dict.npy'
 FILE_BLAST_TRAIN_DB = DATADIR + 'train_blast.dmnd' # blast比对数据库
-FILE_BLAST_PRODUCTION_DB = DATADIR + 'production_blast.dmnd' # 生产环境比对数据库
+FILE_BLAST_PRODUCTION_DB = DATADIR + 'uniprot_blast_db/production_blast.dmnd' # 生产环境比对数据库
 FILE_BLAST_PRODUCTION_FASTA = DATADIR + 'production_blast.fasta' # 生产环境比对数据库
 FILE_TRANSFER_DICT = DATADIR + 'ec_transfer_dict.npy'
 

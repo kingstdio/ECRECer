@@ -1,8 +1,52 @@
 import pandas as pd
 import numpy as np
-import os,string, random
+import os,string, random,joblib,sys
 from datetime import datetime
 import config as cfg
+from sklearn import preprocessing
+from keras.models import Model
+from keras.optimizers import Adam
+from keras.layers import Input, Dense, GRU, Bidirectional
+from tools import Attention
+
+
+# sortmax 结果转 onehot
+def props_to_onehot(props):
+    if isinstance(props, list):
+        props = np.array(props)
+    a = np.argmax(props, axis=1)
+    b = np.zeros((len(a), props.shape[1]))
+    b[np.arange(len(a)), a] = 1
+    return b
+
+def make_onehot_label(label_list, save=False, file_encoder='./encode.h5', type='singel'):
+    if type=='singel':
+        encoder = preprocessing.OneHotEncoder(sparse=False)
+        results = encoder.fit_transform([[item] for item in label_list])
+        
+    elif type=='multi':
+        encoder = preprocessing.MultiLabelBinarizer()
+        results=encoder.fit_transform([ item.split(',') for item in label_list])
+    else:
+        print('lable encoding type error, please check')
+        sys.exit()
+
+    if save ==True:
+        joblib.dump(encoder, file_encoder)
+
+    return results
+
+def mgru_attion_model(input_dimensions, gru_h_size=512,  dropout=0.2,  lossfunction='binary_crossentropy', 
+                      evaluation_metrics='accuracy', activation_method = 'sigmoid', output_dimensions=2
+                    ):
+    inputs = Input(shape=(1, input_dimensions), name="input")
+    gru = Bidirectional(GRU(gru_h_size, dropout=dropout, return_sequences=True), name="bi-gru")(inputs)
+    attention = Attention.Attention(32)(gru)
+    output = Dense(output_dimensions, activation=activation_method, name="dense")(attention)
+    model = Model(inputs, output)
+    model.compile(loss=lossfunction, optimizer=Adam(),metrics=[evaluation_metrics])
+
+    return model
 
 # region 需要写fasta的dataFame格式
 def save_table2fasta(dataset, file_out):
