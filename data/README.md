@@ -8,7 +8,17 @@
  * 
  * Copyright (c) 2022 by tibd, All Rights Reserved. 
 -->
+
 # DATA FOLDER
 
-Bechmark task data set can be downloaded from MS onedrive.
-URL: https://mailsjlueducn-my.sharepoint.com/:f:/g/personal/shizk14_mails_jlu_edu_cn/EnGcWKNFIB1LvFWmWhXUbxsBXNKbkenHKFZ6kwszlU600w?e=OAuWvm
+## Folder Structure
+
+rootfolder/data/datasets/
+
+## Get Data
+
+Bechmark task data set can be downloaded from AWS S3.
+
+```
+wget https://tibd-public-datasets.s3.amazonaws.com/ecrecer/ecrecer_datasets.zip
+```

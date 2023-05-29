@@ -4,7 +4,6 @@ import joblib
 import os,sys
 import benchmark_common as bcommon
 import config as cfg
-import benchmark_test as btest
 import argparse
 import tools.funclib as funclib
 from tools.Attention import Attention
@@ -137,28 +136,6 @@ def gather_ec_by_fc(toplist, ec_blast ,counts):
         return ','.join(toplist[0:counts])
 #endregion
 
-#region GOT EC PREDICTION BY SLICE
-def predict_ec_slice(test_data):
-    """[GOT EC PREDICTION BY SLICE]
-
-    Args:
-        test_data ([DataFrame]): [esm32 format DataFrame]
-    """
-    pr_X = test_data.iloc[:,1:]
-    timestr = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-    xfile = cfg.TEMPDIR+'ptest_'+timestr+'.txt'
-    xpred = cfg.TEMPDIR+'ptest_'+timestr+'.tsv'
-    cfg.FEATURE_NUM = 1280
-    bcommon.prepare_slice_file_onlyx(x_data=pr_X,  x_file=xfile)
-    dict_ec_label = np.load(cfg.FILE_EC_LABEL_DICT, allow_pickle=True).item()
-    slice_pred_ec = btest.get_slice_res(slice_query_file=xfile, 
-                                        model_path= cfg.MODELDIR+'/slice_esm32', 
-                                        dict_ec_label=dict_ec_label, 
-                                        test_set=test_data,  
-                                        res_file=xpred)
-    
-    return slice_pred_ec
-#endregion
 
 #region run
 def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
@@ -179,7 +156,6 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
     latest_sprot = pd.read_feather(cfg.FILE_LATEST_SPROT_FEATHER) #sprot db
 
     
-
     # 2. 查找数据
     print('step 2: find existing data')
     find_data = input_df.merge(latest_sprot, on='seq', how='left')
