@@ -2,7 +2,7 @@
 Author: Zhenkun Shi
 Date: 2020-06-05 05:10:25
 LastEditors: Zhenkun Shi
-LastEditTime: 2023-02-06 05:11:51
+LastEditTime: 2023-04-19 05:59:01
 FilePath: /DMLF/config.py
 Description: 
 
@@ -133,7 +133,6 @@ EMBEDDING_METHOD={  'one-hot':1,
                     'esm32':4, 
                     'esm33':5
                 }
-
 
 #
 BLAST_TABLE_HEAD = ['id', 

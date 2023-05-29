@@ -41,8 +41,8 @@ def train_isenzyme(X,Y, model_file, vali_ratio=0.2, force_model_update=False, ep
         checkpoint = ModelCheckpoint(filepath=model_file, monitor='val_accuracy', mode='auto', save_best_only='True')
         instant_model = bcommon.mgru_attion_model(input_dimensions=X.shape[1], gru_h_size=512, dropout=0.2, lossfunction='binary_crossentropy', 
                         evaluation_metrics='accuracy', activation_method = 'sigmoid', output_dimensions=Y.shape[1] )
-        
-        instant_model.fit(x_train, y_train, validation_data=(x_vali, y_vali), batch_size=4096, epochs= epochs, callbacks=[tbCallBack, checkpoint])
+         
+        instant_model.fit(x_train, y_train, validation_data=(x_vali, y_vali), batch_size=512, epochs= epochs, callbacks=[tbCallBack, checkpoint])
         # 保存
         print(f'train_isenzyme finished, best model saved to: {model_file}')
         
@@ -56,12 +56,12 @@ def train_howmany_enzyme(X, Y, model_file, force_model_update=False, epochs=1):
         x_train, x_vali, y_train, y_vali = train_test_split(np.array(X), np.array(Y), test_size=0.3, shuffle=False)
         x_train = x_train.reshape(x_train.shape[0],1,-1)
         x_vali  = x_vali.reshape(x_vali.shape[0],1,-1)
-        tbCallBack = TensorBoard(log_dir=f'{cfg.TEMPDIR}model/task1', histogram_freq=1,write_grads=True)
+        tbCallBack = TensorBoard(log_dir=f'{cfg.TEMPDIR}model/task3', histogram_freq=1,write_grads=True)
         checkpoint = ModelCheckpoint(filepath=model_file, monitor='val_accuracy', mode='auto', save_best_only='True')
         instant_model = bcommon.mgru_attion_model(input_dimensions=X.shape[1], gru_h_size=128, dropout=0.2, lossfunction='categorical_crossentropy', 
                         evaluation_metrics='accuracy', activation_method = 'softmax', output_dimensions=Y.shape[1])
         
-        instant_model.fit(x_train, y_train, validation_data=(x_vali, y_vali), batch_size=512, epochs= epochs, callbacks=[tbCallBack, checkpoint])
+        instant_model.fit(x_train, y_train, validation_data=(x_vali, y_vali), batch_size=128, epochs= epochs, callbacks=[tbCallBack, checkpoint])
         
         print(f'train how many enzyme finished, best model saved to: {model_file}')
 #endregion
@@ -75,7 +75,7 @@ def train_ec(X, Y, model_file,  force_model_update=False, epochs=1):
         x_vali  = x_vali.reshape(x_vali.shape[0],1,-1)
         instant_model = bcommon.mgru_attion_model(input_dimensions=X.shape[1], gru_h_size=512, dropout=0.2, lossfunction='categorical_crossentropy', 
                         evaluation_metrics='accuracy', activation_method = 'softmax', output_dimensions=Y.shape[1] )
-        tbCallBack = TensorBoard(log_dir=f'{cfg.TEMPDIR}model/task1', histogram_freq=1,write_grads=True)
+        tbCallBack = TensorBoard(log_dir=f'{cfg.TEMPDIR}model/task3', histogram_freq=1,write_grads=True)
         checkpoint = ModelCheckpoint(filepath=model_file, monitor='val_accuracy', mode='auto', save_best_only='True')
         instant_model.fit(x_train, y_train, validation_data=(x_vali, y_vali), batch_size=3948, epochs= epochs, callbacks=[tbCallBack, checkpoint])
         # 保存
@@ -103,7 +103,7 @@ if __name__ =="__main__":
     #3. train task-1 model
     print('step 3: train isEnzyme model')
     task1_X, task1_Y = get_train_X_Y(traindata=data_task1_train, feature_bankfile=feature_df, task=1)
-    train_isenzyme(X=task1_X, Y=task1_Y, model_file= cfg.ISENZYME_MODEL, force_model_update=cfg.UPDATE_MODEL, epochs=2000)
+    train_isenzyme(X=task1_X, Y=task1_Y, model_file= cfg.ISENZYME_MODEL, force_model_update=cfg.UPDATE_MODEL, epochs=400)
 
     #4. task2 train
     print('step 4: train how many enzymes model')
@@ -113,7 +113,7 @@ if __name__ =="__main__":
     #5. task3 train
     print('step 5 train EC model')
     task3_X, task3_Y = get_train_X_Y(traindata=data_task3_train, feature_bankfile=feature_df, task=3)
-    train_ec(X=task3_X, Y=task3_Y, model_file=cfg.EC_MODEL, force_model_update=cfg.UPDATE_MODEL, epochs=4000)
+    train_ec(X=task3_X, Y=task3_Y, model_file=cfg.EC_MODEL, force_model_update=cfg.UPDATE_MODEL, epochs=400)
 
 
     print('train finished')

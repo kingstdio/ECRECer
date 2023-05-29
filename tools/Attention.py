@@ -12,7 +12,7 @@ Copyright (c) 2022 by tibd, All Rights Reserved.
 # -*- coding: utf-8 -*-
 from keras import backend as K
 # from keras.engine.topology import Layer
-from tensorflow.keras.layers import Layer, InputSpec
+from keras.layers import Layer, InputSpec
 # from visualizer  import get_local
 
 # 利用Keras构造注意力机制层
