@@ -2,7 +2,7 @@
  * @Author: Zhenkun Shi
  * @Date: 2022-04-19 11:21:15
  * @LastEditors: Zhenkun Shi
- * @LastEditTime: 2023-05-29 04:08:28
+ * @LastEditTime: 2023-05-29 04:27:02
  * @FilePath: /DMLF/README.md
  * @Description: 
  * 
@@ -20,6 +20,7 @@ Detailed information about the framework can be found in our paper
 
 2. Zhenkun Shi, Rui Deng, Qianqian Yuan, Zhitao Mao, Ruoyu Wang, Haoran Li, Xiaoping Liao*, Hongwu Ma* (2023). Enzyme Commission Number Prediction and Benchmarking with Hierarchical Dual-core Multitask Learning Framework. Research.
 ```
+
 
 ```bash
 
@@ -49,6 +50,8 @@ conda env create -f env.yaml
 Download and prepare the data set use the.
 
 > [prepare_task_dataset.ipynb](./prepare_task_dataset.ipynb)
+
+Or directly download the preprocessed data from [aws public dataset](https://tibd-public-datasets.s3.amazonaws.com/ecrecer/ecrecer_datasets.zip) and put it in the rootfolder/data/datasets/
 
 # Step by step benchmarking
 
@@ -89,6 +92,21 @@ python benchmark_evaluation.py
 ```python
 python production.py -i input_fasta_file -o output_tsv_file -mode [p|r] -topk 5
 ```
+
+# Citations 
+
+If you find the methods useful in your research, we ask that you cite the relevant paper:
+
+```bib 
+@article{shi2023enzyme,
+  title={Enzyme Commission Number Prediction and Benchmarking with Hierarchical Dual-core Multitask Learning Framework},
+  author={Shi, Zhenkun and Deng, Rui and Yuan, Qianqian and Mao, Zhitao and Wang, Ruoyu and Li, Haoran and Liao, Xiaoping and Ma, Hongwu},
+  journal={Research},
+  year={2023},
+  publisher={AAAS}
+}
+```
+
 
 ## Stargazers over time
 
