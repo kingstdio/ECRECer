@@ -1,0 +1,57 @@
+name: Report Problem / 故障报告
+description: Report a problem with ECRecer / 报告使用网站站时出现的问题
+labels: ["problem report"]
+body:
+  - type: markdown
+    id: preamble
+    attributes:
+      value: |
+        如果在使用ECRecer网站时遇到问题，请填写以下表单。
+        If you encountered a problem using ECRecer, please fill in the form below.
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: 先决条件 / Prerequisites
+      options:
+        - label: |
+            该问题未被其他 [issues](https://github.com/kingstdio/ECRECer/issues) 提出。
+            No previous issues have reported this problem.
+          required: true
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: 发生了什么 / What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: 期望的现象 / What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: how_to_reproduce
+    attributes:
+      label: 如何重现此问题 / How to reproduce
+    validations:
+      required: true
+  - type: input
+    id: os_version
+    attributes:
+      label: 操作系统版本 / OS version
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: 浏览器或客户端版本 / Browser/client version
+    validations:
+      required: true
+  - type: textarea
+    id: other_env
+    attributes:
+      label: 其他环境 / Other environments
+  - type: textarea
+    id: others
+    attributes:
+      label: 其他 / Anything else
