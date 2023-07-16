@@ -41,7 +41,6 @@ def integrate_out_put(existing_table, blast_table, dmlf_pred_table, mode='p', to
     results_df['pred_ec']=results_df.parallel_apply(lambda x: gather_ec_by_fc(x.iloc[3:23],x.ec_number, x.pred_function_counts), axis=1)
     results_df = results_df.iloc[:,np.r_[0,23,1,2,32,27:31]].rename(columns={'seq_x':'seq','seqlength_x':'seqlength'})
 
-    
 
     if mode=='p':
         existing_table['pred_ec']=''
@@ -137,6 +136,8 @@ def gather_ec_by_fc(toplist, ec_blast ,counts):
 #endregion
 
 
+
+
 #region run
 def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
     """[run]
@@ -149,6 +150,8 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         print('run in annoation mode')
     if mode =='r':
         print('run in recommendation mode')
+    if mode =='h':
+        print('run in hybrid mode')
 
     # 1. 读入数据
     print('step 1: loading data')
@@ -160,30 +163,32 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
     print('step 2: find existing data')
     find_data = input_df.merge(latest_sprot, on='seq', how='left')
     find_data = latest_sprot[latest_sprot.seq.isin(input_df.seq)]
+    find_data = find_data.drop_duplicates(subset='seq').reset_index(drop=True)
     exist_data = find_data.merge(input_df, on='seq', how='left').iloc[:,np.r_[8,0,1:8]].rename(columns={'id_x':'uniprot_id','id_y':'input_id'}).reset_index(drop=True)
     noExist_data = input_df[~input_df.seq.isin(find_data.seq)]
 
-    # if len(noExist_data) == 0:
-    #     exist_data=exist_data[['input_id','ec_number']].rename(columns={'ec_number':'ec_pred'})
-    #     exist_data.to_csv(output_tsv, sep='\t', index=False)
-    #     end = time.process_time()
-    #     print('All done running time: %s Seconds'%(end-start))
-    #     return
+    if len(noExist_data) == 0:
+        exist_data=exist_data[['input_id','ec_number']].rename(columns={'ec_number':'ec_pred'})
+        exist_data.to_csv(output_tsv, sep='\t', index=False)
+        end = time.process_time()
+        print('All done running time: %s Seconds'%(end-start))
+        return
+    
     
     # 3. EMBedding
     print('step 3: Embedding')
-    rep0, rep32, rep33 = esmebd.get_rep_multi_sequence(sequences=input_df, model='esm1b_t33_650M_UR50S',seqthres=1022)
+    featurebank_esm32 = pd.read_feather(cfg.FILE_FEATURE_ESM32)
+
+    existing_feature = featurebank_esm32[featurebank_esm32.id.isin(exist_data.uniprot_id)]
+    existing_feature = exist_data[['input_id','uniprot_id']].merge(existing_feature.rename(columns={'id':'uniprot_id'}), on='uniprot_id', how='left').rename(columns={'input_id':'id'}).iloc[:,np.r_[0,2:existing_feature.shape[1]+1]]
+
+    rep0, rep32, rep33 = esmebd.get_rep_multi_sequence(sequences=noExist_data, model='esm1b_t33_650M_UR50S',seqthres=1022)
+
+    rep32 = pd.concat([existing_feature,rep32],axis=0).reset_index(drop=True)
+
+    print('step 4: run prediction')
+
     if mode=='p':
-        # 4. sequence alignment
-        print('step 4: sequence alignment')
-        if not os.path.exists(cfg.FILE_BLAST_PRODUCTION_DB):
-            funclib.table2fasta(latest_sprot, cfg.FILE_BLAST_PRODUCTION_FASTA)
-            cmd = r'diamond makedb --in {0} -d {1}'.format(cfg.FILE_BLAST_PRODUCTION_FASTA, cfg.FILE_BLAST_PRODUCTION_DB)
-            os.system(cmd)
-
-
-        blast_res = funclib.getblast_usedb(db=cfg.FILE_BLAST_PRODUCTION_DB, test=input_df)
-        blast_res =blast_res[['id', 'sseqid']].merge(latest_sprot, left_on='sseqid', right_on='id', how='left').iloc[:,np.r_[0,2,3:10]].rename(columns={'id_x':'input_id','id_y':'uniprot_id'}).reset_index(drop=True)
 
         # 5. isEnzyme Prediction
         print('step 5: predict isEnzyme')
@@ -216,14 +221,65 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         results=results.fillna('#')
         results['ec_pred'] =results.apply(lambda x : x.ec_number if x.ec_number!='#' else ('-' if x.dmlf_isEnzyme==False else x.dmlf_ec) ,axis=1)
         output_df = results[['id', 'ec_pred']].rename(columns={'id':'id_input'})
+
     elif mode =='r':
         print('step 4: recommendation')
         label_model_ec = pd.read_feather(f'{cfg.MODELDIR}/task3_labels.feather').label_multi.to_list()
-        model_ec = load_model('/home/shizhenkun/codebase/DMLF/model/task3_esm32_2022.h5',custom_objects={"Attention": Attention}, compile=False)
+        model_ec = load_model(f'{cfg.MODELDIR}/task3_esm32_2022.h5',custom_objects={"Attention": Attention}, compile=False)
         predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
         output_df=pd.DataFrame()
         output_df['id']=input_df['id'].copy()
         output_df['ec_recomendations']=pd.DataFrame(predicted).apply(lambda x :sorted(dict(zip((label_model_ec), x)).items(),key = lambda x:x[1], reverse = True)[0:topnum], axis=1 ).values
+
+    
+    elif mode =='h':
+        print('running in hybird mode')
+
+        # 4. sequence alignment
+        print('step 4: sequence alignment')
+        if not os.path.exists(cfg.FILE_BLAST_PRODUCTION_DB):
+            funclib.table2fasta(latest_sprot, cfg.FILE_BLAST_PRODUCTION_FASTA)
+            cmd = r'diamond makedb --in {0} -d {1}'.format(cfg.FILE_BLAST_PRODUCTION_FASTA, cfg.FILE_BLAST_PRODUCTION_DB)
+            os.system(cmd)
+        blast_res = funclib.getblast_usedb(db=cfg.FILE_BLAST_PRODUCTION_DB, test=input_df)
+        blast_res =blast_res[['id', 'sseqid']].merge(latest_sprot, left_on='sseqid', right_on='id', how='left').iloc[:,np.r_[0,2,3:10]].rename(columns={'id_x':'input_id','id_y':'uniprot_id'}).reset_index(drop=True)
+
+        # 5. isEnzyme Prediction
+        print('step 5: predict isEnzyme')
+        pred_dmlf = pd.DataFrame(rep32.id.copy())
+        model_isEnzyme = load_model(cfg.ISENZYME_MODEL,custom_objects={"Attention": Attention}, compile=False)
+        predicted = model_isEnzyme.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        encoder_t1=joblib.load(cfg.DICT_LABEL_T1)
+        pred_dmlf['dmlf_isEnzyme']=(encoder_t1.inverse_transform(bcommon.props_to_onehot(predicted))).reshape(1,-1)[0]
+
+
+        # 6. How many Prediction
+        print('step 6: predict function counts')
+        model_howmany = load_model(cfg.HOWMANY_MODEL,custom_objects={"Attention": Attention}, compile=False)
+        predicted = model_howmany.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        encoder_t2=joblib.load(cfg.DICT_LABEL_T2)
+        pred_dmlf['dmlf_functions']=(encoder_t2.inverse_transform(bcommon.props_to_onehot(predicted))).reshape(1,-1)[0]
+
+
+        # 7. EC Prediction
+        print('step 7: predict EC')
+        model_ec = load_model(cfg.EC_MODEL,custom_objects={"Attention": Attention}, compile=False)
+        predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        encoder_t3=joblib.load(cfg.DICT_LABEL_T3)
+        pred_dmlf['dmlf_ec']=[','.join(item) for item in (encoder_t3.inverse_transform(bcommon.props_to_onehot(predicted)))]
+        pred_dmlf['dmlf_recomendations']=pd.DataFrame(predicted).apply(lambda x :sorted(dict(zip((encoder_t3.classes_), x)).items(),key = lambda x:x[1], reverse = True)[0:20], axis=1 ).values
+
+        pred_dmlf = pred_dmlf.merge(blast_res[['input_id','ec_number']].rename(columns={'ec_number':'blast_ec'}), left_on='id', right_on='input_id', how='left')
+        # pred_dmlf['dmlf_recomendations']=pred_dmlf.apply(lambda x: x.dmlf_recomendations if x.dmlf_isEnzyme else '-', axis=1 )
+        pred_dmlf['dmlf_ec']=pred_dmlf.apply(lambda x: x.dmlf_ec if x.dmlf_isEnzyme else '-', axis=1 )
+        pred_dmlf = pred_dmlf.merge(exist_data[['input_id','ec_number']].rename(columns={'ec_number':'db_ec'}), on='input_id', how='left')
+        pred_dmlf['dmlf_ec']=pred_dmlf.apply(lambda x: x.db_ec if str(x.db_ec)!='nan' else x.dmlf_ec,axis=1)
+        pred_dmlf['dmlf_isEnzyme']=pred_dmlf.apply(lambda x: True if (str(x.db_ec)!='nan' and x.db_ec!='-') else x.dmlf_isEnzyme,axis=1)
+        pred_dmlf['dmlf_functions']=pred_dmlf.apply(lambda x: len(x.db_ec.split(',')) if str(x.db_ec)!='nan' else x.dmlf_functions,axis=1)
+
+
+        output_df = pred_dmlf[['id', 'dmlf_isEnzyme', 'dmlf_functions', 'dmlf_ec', 'dmlf_recomendations', 'blast_ec' ]].rename(columns={'id':'input_id'})
+
     else:
         print(f'mode:{mode} not found')
         sys.exit()
@@ -243,9 +299,9 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
 if __name__ =='__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', help='input file (fasta format)', type=str, default=cfg.DATADIR + 'sample_25.fasta')
-    parser.add_argument('-o', help='output file (tsv table)', type=str, default=cfg.RESULTSDIR + 'ec_res20230206.tsv')
-    parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation', type=str, default='r')
+    parser.add_argument('-i', help='input file (fasta format)', type=str, default=cfg.DATADIR + 'uniprotkb_Escherichia_coli_AND_model_or_2023_07_13.fasta')
+    parser.add_argument('-o', help='output file (tsv table)', type=str, default=cfg.RESULTSDIR + 'ec_resuniprotkb_Escherichia_coli_AND_model_or_2023_07_13.tsv')
+    parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation', type=str, default='h')
     parser.add_argument('-topk', help='recommendation records, min=1, max=20', type=int, default='5')
 
     pandarallel.initialize() #init
