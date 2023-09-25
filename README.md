@@ -21,7 +21,6 @@ Detailed information about the framework can be found in our paper
 2. Zhenkun Shi, Rui Deng, Qianqian Yuan, Zhitao Mao, Ruoyu Wang, Haoran Li, Xiaoping Liao*, Hongwu Ma* (2023). Enzyme Commission Number Prediction and Benchmarking with Hierarchical Dual-core Multitask Learning Framework. Research.
 ```
 
-
 ```bash
 
 ```
@@ -93,11 +92,11 @@ python benchmark_evaluation.py
 python production.py -i input_fasta_file -o output_tsv_file -mode [p|r] -topk 5
 ```
 
-# Citations 
+# Citations
 
-If you find the methods useful in your research, we ask that you cite the relevant paper:
+If you find these methods valuable for your research, we kindly request that you reference the pertinent paper:
 
-```bib 
+```bib
 @article{shi2023enzyme,
   title={Enzyme Commission Number Prediction and Benchmarking with Hierarchical Dual-core Multitask Learning Framework},
   author={Shi, Zhenkun and Deng, Rui and Yuan, Qianqian and Mao, Zhitao and Wang, Ruoyu and Li, Haoran and Liao, Xiaoping and Ma, Hongwu},
@@ -106,7 +105,6 @@ If you find the methods useful in your research, we ask that you cite the releva
   publisher={AAAS}
 }
 ```
-
 
 ## Stargazers over time
 
