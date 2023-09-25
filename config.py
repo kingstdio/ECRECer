@@ -2,8 +2,8 @@
 Author: Zhenkun Shi
 Date: 2020-06-05 05:10:25
 LastEditors: Zhenkun Shi
-LastEditTime: 2023-04-19 05:59:01
-FilePath: /DMLF/config.py
+LastEditTime: 2023-08-25 14:32:54
+FilePath: /ECRECer/config.py
 Description: 
 
 Copyright (c) 2022 by tibd, All Rights Reserved. 
@@ -13,7 +13,7 @@ import os
 
 
 # 1. 定义数据目录
-ROOTDIR= f'{os.getcwd()}/'
+ROOTDIR= f'/home/shizhenkun/codebase/ECRECer/' #change to your own absolute data dir
 DATADIR = ROOTDIR +'data/'
 RESULTSDIR = ROOTDIR +'results/'
 MODELDIR = ROOTDIR +'model'

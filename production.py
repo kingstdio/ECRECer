@@ -167,7 +167,7 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
     exist_data = find_data.merge(input_df, on='seq', how='left').iloc[:,np.r_[8,0,1:8]].rename(columns={'id_x':'uniprot_id','id_y':'input_id'}).reset_index(drop=True)
     noExist_data = input_df[~input_df.seq.isin(find_data.seq)]
 
-    if len(noExist_data) == 0:
+    if len(noExist_data) == 0 and mode=='p':
         exist_data=exist_data[['input_id','ec_number']].rename(columns={'ec_number':'ec_pred'})
         exist_data.to_csv(output_tsv, sep='\t', index=False)
         end = time.process_time()
@@ -223,14 +223,22 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         output_df = results[['id', 'ec_pred']].rename(columns={'id':'id_input'})
 
     elif mode =='r':
-        print('step 4: recommendation')
-        label_model_ec = pd.read_feather(f'{cfg.MODELDIR}/task3_labels.feather').label_multi.to_list()
-        model_ec = load_model(f'{cfg.MODELDIR}/task3_esm32_2022.h5',custom_objects={"Attention": Attention}, compile=False)
-        predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
-        output_df=pd.DataFrame()
-        output_df['id']=input_df['id'].copy()
-        output_df['ec_recomendations']=pd.DataFrame(predicted).apply(lambda x :sorted(dict(zip((label_model_ec), x)).items(),key = lambda x:x[1], reverse = True)[0:topnum], axis=1 ).values
+        # print('step 4: recommendation')
+        # label_model_ec = pd.read_feather(f'{cfg.MODELDIR}/task3_labels.feather').label_multi.to_list()
+        # model_ec = load_model(f'{cfg.MODELDIR}/task3_esm32_2022.h5',custom_objects={"Attention": Attention}, compile=False)
+        # predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        # output_df=pd.DataFrame()
+        # output_df['id']=input_df['id'].copy()
+        # output_df['ec_recomendations']=pd.DataFrame(predicted).apply(lambda x :sorted(dict(zip((label_model_ec), x)).items(),key = lambda x:x[1], reverse = True)[0:topnum], axis=1 ).values
 
+        print('step 4: predict EC')
+        pred_dmlf = pd.DataFrame(rep32.id.copy())
+        model_ec = load_model(cfg.EC_MODEL,custom_objects={"Attention": Attention}, compile=False)
+        predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        encoder_t3=joblib.load(cfg.DICT_LABEL_T3)
+        pred_dmlf['dmlf_ec']=[','.join(item) for item in (encoder_t3.inverse_transform(bcommon.props_to_onehot(predicted)))]
+        pred_dmlf['dmlf_recomendations']=pd.DataFrame(predicted).apply(lambda x :sorted(dict(zip((encoder_t3.classes_), x)).items(),key = lambda x:x[1], reverse = True)[0:topnum], axis=1 ).values
+        output_df = pred_dmlf[['id', 'dmlf_recomendations']].rename(columns={'id':'id_input'})
     
     elif mode =='h':
         print('running in hybird mode')
@@ -267,7 +275,7 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
         encoder_t3=joblib.load(cfg.DICT_LABEL_T3)
         pred_dmlf['dmlf_ec']=[','.join(item) for item in (encoder_t3.inverse_transform(bcommon.props_to_onehot(predicted)))]
-        pred_dmlf['dmlf_recomendations']=pd.DataFrame(predicted).apply(lambda x :sorted(dict(zip((encoder_t3.classes_), x)).items(),key = lambda x:x[1], reverse = True)[0:20], axis=1 ).values
+        pred_dmlf['dmlf_recomendations']=pd.DataFrame(predicted).apply(lambda x :sorted(dict(zip((encoder_t3.classes_), x)).items(),key = lambda x:x[1], reverse = True)[0:topnum], axis=1 ).values
 
         pred_dmlf = pred_dmlf.merge(blast_res[['input_id','ec_number']].rename(columns={'ec_number':'blast_ec'}), left_on='id', right_on='input_id', how='left')
         # pred_dmlf['dmlf_recomendations']=pred_dmlf.apply(lambda x: x.dmlf_recomendations if x.dmlf_isEnzyme else '-', axis=1 )
@@ -299,10 +307,10 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
 if __name__ =='__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', help='input file (fasta format)', type=str, default=cfg.DATADIR + 'uniprotkb_Escherichia_coli_AND_model_or_2023_07_13.fasta')
-    parser.add_argument('-o', help='output file (tsv table)', type=str, default=cfg.RESULTSDIR + 'ec_resuniprotkb_Escherichia_coli_AND_model_or_2023_07_13.tsv')
-    parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation', type=str, default='h')
-    parser.add_argument('-topk', help='recommendation records, min=1, max=20', type=int, default='5')
+    parser.add_argument('-i', help='input file (fasta format)', type=str, default=cfg.DATADIR + 'sample_10.fasta')
+    parser.add_argument('-o', help='output file (tsv table)', type=str, default=cfg.RESULTSDIR + 'sample_10_2023_07_18.tsv')
+    parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation', type=str, default='r')
+    parser.add_argument('-topk', help='recommendation records, min=1, max=20', type=int, default='50')
 
     pandarallel.initialize() #init
     args = parser.parse_args()
