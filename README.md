@@ -2,8 +2,8 @@
  * @Author: Zhenkun Shi
  * @Date: 2022-04-19 11:21:15
  * @LastEditors: Zhenkun Shi
- * @LastEditTime: 2023-05-29 04:27:02
- * @FilePath: /DMLF/README.md
+ * @LastEditTime: 2023-10-06 11:52:41
+ * @FilePath: /ECRECer/README.md
  * @Description: 
  * 
  * Copyright (c) 2022 by tibd, All Rights Reserved. 
@@ -52,7 +52,7 @@ Download and prepare the data set use the.
 
 Or directly download the preprocessed data from [aws public dataset](https://tibd-public-datasets.s3.amazonaws.com/ecrecer/ecrecer_datasets.zip) and put it in the rootfolder/data/datasets/
 
-# Step by step benchmarking
+<!-- # Step by step benchmarking
 
 ### Task 1: Enzyme or None-Enzyme Prediction
 
@@ -64,7 +64,7 @@ Or directly download the preprocessed data from [aws public dataset](https://tib
 
 ### Task 3: EC Number Prediction
 
-> [./tasks/task3.ipynb](./task3.ipynb)
+> [./tasks/task3.ipynb](./task3.ipynb) -->
 
 # High throughput benchmarking
 

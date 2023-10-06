@@ -66,6 +66,17 @@ def train_howmany_enzyme(X, Y, model_file, force_model_update=False, epochs=1):
         print(f'train how many enzyme finished, best model saved to: {model_file}')
 #endregion
 
+def make_ec_label(train_label, test_label, file_save, force_model_update=False):
+    if os.path.exists(file_save) and (force_model_update==False):
+        print('ec label dict already exist')
+        return
+    ecset = sorted( set(list(train_label) + list(test_label)))
+    ec_label_dict = {k: v for k, v in zip(ecset, range(len(ecset)))}
+    np.save(file_save, ec_label_dict)
+    print('字典保存成功')
+    return  ec_label_dict
+    
+
 def train_ec(X, Y, model_file,  force_model_update=False, epochs=1):
     if os.path.exists(model_file) and (force_model_update==False):
         return
