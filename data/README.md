@@ -20,13 +20,13 @@ rootfolder/data/featureBank/
 
 Bechmark task data set can be downloaded from AWS S3.
 
-### put in datasets dir
+### Put in datasets dir
 ```
 wget https://tibd-public-datasets.s3.amazonaws.com/ecrecer/ecrecer_datasets.zip
 ```
 
 
-### put in featureBank dir
+### Put in featureBank dir
 ```
 wget https://tibd-public-datasets.s3.us-east-1.amazonaws.com/ecrecer/data/featureBank/embd_unirep.feather
 wget https://tibd-public-datasets.s3.us-east-1.amazonaws.com/ecrecer/data/featureBank/embd_onehot.feather
