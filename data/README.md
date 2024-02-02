@@ -14,6 +14,7 @@
 ## Folder Structure
 
 rootfolder/data/datasets/
+rootfolder/data/featureBank/
 
 ## Get Data
 
