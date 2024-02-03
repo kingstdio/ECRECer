@@ -153,7 +153,6 @@ results/
 *.st
 
 model/single_multi.model
-data/file_out_path
 
 *.faa
 model/multi_many.model

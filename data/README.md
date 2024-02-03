@@ -15,6 +15,7 @@
 
 rootfolder/data/datasets/    
 rootfolder/data/featureBank/
+rootfolder/data/dict/
 
 ## Get Data
 
