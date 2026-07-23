@@ -1,0 +1,18 @@
+# Runtime stack validated on gnode25 with NVIDIA RTX 5090.
+# Install PyTorch from the PyTorch CUDA 13.0 index before installing this file:
+#   python -m pip install --index-url https://download.pytorch.org/whl/cu130 torch==2.13.0+cu130
+
+biopython==1.87
+fair-esm==2.0.0
+h5py==3.14.0
+joblib==1.5.3
+numpy==2.4.6
+pandarallel==1.6.5
+pandas==3.0.3
+pyarrow==25.0.0
+scikit-learn==1.9.0
+scipy==1.17.1
+tensorflow==2.21.0
+tf-keras==2.21.0
+tqdm==4.68.4
+xgboost==3.2.0

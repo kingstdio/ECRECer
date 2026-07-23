@@ -1,16 +1,43 @@
+import os
+import sys
+import warnings
+
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
+os.environ.setdefault("TF_ENABLE_ONEDNN_OPTS", "0")
+os.environ.setdefault("ABSL_MIN_LOG_LEVEL", "2")
+
 import pandas as pd
 import numpy as np
 import joblib
-import os,sys
 import benchmark_common as bcommon
 import config as cfg
 import argparse
 import tools.funclib as funclib
 from tools.Attention import Attention
-from keras.models import load_model
+from tools.keras_compat import load_model
 import tools.embedding_esm as esmebd
 import time
 from pandarallel import pandarallel #  import pandaralle
+
+
+def configure_runtime_warnings():
+    warnings.filterwarnings(
+        "ignore",
+        message="pyarrow.feather.read_table is deprecated.*",
+        category=FutureWarning,
+    )
+    try:
+        from sklearn.exceptions import InconsistentVersionWarning
+    except ImportError:
+        return
+    warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
+
+
+def initialize_pandarallel():
+    try:
+        pandarallel.initialize(verbose=0)
+    except TypeError:
+        pandarallel.initialize()
 
 
 #region Integrate output
@@ -136,6 +163,11 @@ def gather_ec_by_fc(toplist, ec_blast ,counts):
 #endregion
 
 
+def format_recommendations(probabilities, labels, topnum):
+    top_items = sorted(zip(labels, probabilities), key=lambda item: item[1], reverse=True)[:topnum]
+    return "[" + ", ".join("('%s', %.6f)" % (label, float(score)) for label, score in top_items) + "]"
+
+
 
 
 #region run
@@ -145,9 +177,10 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         input_fasta ([string]): [input fasta file]
         output_tsv ([string]): [output tsv file]
     """
+    configure_runtime_warnings()
     start = time.process_time()
     if mode =='p':
-        print('run in annoation mode')
+        print('run in prediction mode')
     if mode =='r':
         print('run in recommendation mode')
     if mode =='h':
@@ -194,7 +227,7 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         print('step 5: predict isEnzyme')
         pred_dmlf = pd.DataFrame(rep32.id.copy())
         model_isEnzyme = load_model(cfg.ISENZYME_MODEL,custom_objects={"Attention": Attention}, compile=False)
-        predicted = model_isEnzyme.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        predicted = model_isEnzyme.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1), verbose=0)
         encoder_t1=joblib.load(cfg.DICT_LABEL_T1)
         
         pred_dmlf['dmlf_isEnzyme']=(encoder_t1.inverse_transform(bcommon.props_to_onehot(predicted))).reshape(1,-1)[0]
@@ -203,7 +236,7 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         # 6. How many Prediction
         print('step 6: predict function counts')
         model_howmany = load_model(cfg.HOWMANY_MODEL,custom_objects={"Attention": Attention}, compile=False)
-        predicted = model_howmany.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        predicted = model_howmany.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1), verbose=0)
         encoder_t2=joblib.load(cfg.DICT_LABEL_T2)
         pred_dmlf['dmlf_howmany']=(encoder_t2.inverse_transform(bcommon.props_to_onehot(predicted))).reshape(1,-1)[0]
 
@@ -211,7 +244,7 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         # 7. EC Prediction
         print('step 7: predict EC')
         model_ec = load_model(cfg.EC_MODEL,custom_objects={"Attention": Attention}, compile=False)
-        predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1), verbose=0)
         encoder_t3=joblib.load(cfg.DICT_LABEL_T3)
         pred_dmlf['dmlf_ec']=[','.join(item) for item in (encoder_t3.inverse_transform(bcommon.props_to_onehot(predicted)))]
 
@@ -234,10 +267,10 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         print('step 4: predict EC')
         pred_dmlf = pd.DataFrame(rep32.id.copy())
         model_ec = load_model(cfg.EC_MODEL, custom_objects={"Attention": Attention}, compile=False)
-        predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1), verbose=0)
         encoder_t3=joblib.load(cfg.DICT_LABEL_T3)
         pred_dmlf['dmlf_ec']=[','.join(item) for item in (encoder_t3.inverse_transform(bcommon.props_to_onehot(predicted)))]
-        pred_dmlf['dmlf_recomendations']=pd.DataFrame(predicted).apply(lambda x :sorted(dict(zip((encoder_t3.classes_), x)).items(),key = lambda x:x[1], reverse = True)[0:topnum], axis=1 ).values
+        pred_dmlf['dmlf_recomendations']=pd.DataFrame(predicted).apply(lambda x: format_recommendations(x, encoder_t3.classes_, topnum), axis=1).values
         output_df = pred_dmlf[['id', 'dmlf_recomendations']].rename(columns={'id':'id_input'})
     
     elif mode =='h':
@@ -256,7 +289,7 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         print('step 5: predict isEnzyme')
         pred_dmlf = pd.DataFrame(rep32.id.copy())
         model_isEnzyme = load_model(cfg.ISENZYME_MODEL,custom_objects={"Attention": Attention}, compile=False)
-        predicted = model_isEnzyme.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        predicted = model_isEnzyme.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1), verbose=0)
         encoder_t1=joblib.load(cfg.DICT_LABEL_T1)
         pred_dmlf['dmlf_isEnzyme']=(encoder_t1.inverse_transform(bcommon.props_to_onehot(predicted))).reshape(1,-1)[0]
 
@@ -264,7 +297,7 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         # 6. How many Prediction
         print('step 6: predict function counts')
         model_howmany = load_model(cfg.HOWMANY_MODEL,custom_objects={"Attention": Attention}, compile=False)
-        predicted = model_howmany.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        predicted = model_howmany.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1), verbose=0)
         encoder_t2=joblib.load(cfg.DICT_LABEL_T2)
         pred_dmlf['dmlf_functions']=(encoder_t2.inverse_transform(bcommon.props_to_onehot(predicted))).reshape(1,-1)[0]
 
@@ -272,10 +305,10 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         # 7. EC Prediction
         print('step 7: predict EC')
         model_ec = load_model(cfg.EC_MODEL,custom_objects={"Attention": Attention}, compile=False)
-        predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1))
+        predicted = model_ec.predict(np.array(rep32.iloc[:,1:]).reshape(rep32.shape[0],1,-1), verbose=0)
         encoder_t3=joblib.load(cfg.DICT_LABEL_T3)
         pred_dmlf['dmlf_ec']=[','.join(item) for item in (encoder_t3.inverse_transform(bcommon.props_to_onehot(predicted)))]
-        pred_dmlf['dmlf_recomendations']=pd.DataFrame(predicted).apply(lambda x :sorted(dict(zip((encoder_t3.classes_), x)).items(),key = lambda x:x[1], reverse = True)[0:topnum], axis=1 ).values
+        pred_dmlf['dmlf_recomendations']=pd.DataFrame(predicted).apply(lambda x: format_recommendations(x, encoder_t3.classes_, topnum), axis=1).values
 
         pred_dmlf = pred_dmlf.merge(blast_res[['input_id','ec_number']].rename(columns={'ec_number':'blast_ec'}), left_on='id', right_on='input_id', how='left')
         # pred_dmlf['dmlf_recomendations']=pred_dmlf.apply(lambda x: x.dmlf_recomendations if x.dmlf_isEnzyme else '-', axis=1 )
@@ -293,7 +326,7 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
         sys.exit()
 
 
-    print('step 9: writting results') 
+    print('step 9: writing results')
 
     output_df.to_csv(output_tsv, sep='\t', index=False)
 
@@ -304,16 +337,15 @@ def step_by_step_run(input_fasta, output_tsv, mode='p', topnum=1):
 #endregion
 
 
-if __name__ =='__main__':
-
+def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', help='input file (fasta format)', type=str, default=cfg.DATADIR + 'sample_10.fasta')
     parser.add_argument('-o', help='output file (tsv table)', type=str, default=cfg.RESULTSDIR + 'sample_10_2023_07_18.tsv')
     parser.add_argument('-mode', help='compute mode. p: prediction, r: recommendation, h:hybrid', type=str, default='r')
-    parser.add_argument('-topk', help='recommendation records, min=1, max=20', type=int, default='50')
+    parser.add_argument('-topk', help='recommendation records, min=1, max=20', type=int, default=50)
 
-    pandarallel.initialize() #init
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    initialize_pandarallel()
     input_file = args.i
     output_file = args.o
     compute_mode = args.mode
@@ -324,4 +356,7 @@ if __name__ =='__main__':
                         mode=compute_mode, 
                         topnum=topk
                     )
-    
+
+
+if __name__ =='__main__':
+    main()
