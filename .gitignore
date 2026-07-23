@@ -160,3 +160,27 @@ model/multi_many.model
 model/single_multi.model
 
 data/uniprot/
+
+# AI assistant and local agent workspaces
+.ai/
+.agents/
+.codex/
+.claude/
+AGENTS.md
+
+# Local editor and machine-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+._*
+
+# Contributor scratch notebooks and release-unfriendly drafts
+temp.ipynb
+test.ipynb
+test-case_*.ipynb
+case_study.ipynb
+evaluation_different_embedding.ipynb
+baselines_all_integrated.ipynb
+production.ipynb
+document/
