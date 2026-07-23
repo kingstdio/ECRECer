@@ -32,16 +32,14 @@ dependencies = [
   "scikit-learn>=1.9",
   "scipy>=1.17",
   "tqdm>=4.68",
-]
-
-[project.optional-dependencies]
-runtime = [
   "fair-esm>=2.0",
   "tensorflow>=2.21",
   "tf-keras>=2.21",
   "torch>=2.13",
   "xgboost>=3.2",
 ]
+
+
 [project.scripts]
 ecrecer = "ecrecer.cli:main"
 

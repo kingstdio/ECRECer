@@ -21,14 +21,7 @@ Install the Python package from a built wheel or PyPI package:
 python -m pip install ecrecer
 ```
 
-The package intentionally does not include large data files, UniProt snapshots, feature banks, or trained model weights. Prepare those artifacts separately and point ECRECer at their root directory with `ECRECER_ROOT`.
-
-For the RTX 5090 runtime, install PyTorch from the CUDA 13.0 PyTorch index first, then install the pinned runtime stack:
-
-```bash
-python -m pip install --index-url https://download.pytorch.org/whl/cu130 torch==2.13.0+cu130
-python -m pip install "ecrecer[runtime]"
-```
+The package installs the Python runtime dependencies needed for local inference. It does not include large data files, UniProt snapshots, feature banks, DIAMOND databases, or trained model weights. Prepare those artifacts separately and point ECRECer at their root directory with `ECRECER_ROOT`.
 
 ## Artifact Layout
 
@@ -132,9 +125,7 @@ query_1	[('2.6.1.19', 0.685800), ('2.6.1.22', 0.248600)]
 
 ## GPU Runtime Notes
 
-- The validated 5090 stack uses PyTorch `2.13.0+cu130` for ESM embedding.
-- Existing `.h5` prediction heads are loaded through TensorFlow/Keras compatibility wrappers.
-- TensorFlow `2.21.0` can see RTX 5090 GPUs but may JIT kernels from PTX because current wheels do not ship native kernels for compute capability `12.0a`.
+ECRECer uses the installed TensorFlow and PyTorch runtimes automatically. No separate ECRECer package is needed for different NVIDIA GPU models. For GPU acceleration, use a recent NVIDIA driver and a Python environment where TensorFlow and PyTorch can see the GPU; otherwise ECRECer runs with the available CPU/GPU backend.
 
 ## Docker And Singularity
 
