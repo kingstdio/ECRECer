@@ -1,6 +1,6 @@
 # DMLF: Enzyme Commission Number Predicting and Benchmarking with Multi-agent Dual-core Learning
 
-ECRECer is an Enzyme Commission (EC) number prediction and recommendation tool based on the hierarchical dual-core multitask learning framework described in the ECRECer papers. It accepts protein FASTA sequences and returns EC predictions, ranked EC recommendations, or hybrid results that combine prediction, recommendation, and sequence alignment.
+ECRECer is the official implementation of the hierarchical dual-core multitask learning framework described in the ECRECer papers. It is an Enzyme Commission (EC) number prediction and recommendation tool that accepts protein FASTA sequences and returns EC predictions, ranked EC recommendations, or hybrid results that combine prediction, recommendation, and sequence alignment.
 
 ## Web Server
 
