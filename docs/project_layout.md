@@ -1,6 +1,6 @@
 # Runtime File Layout
 
-ECRECer separates the Python package from large runtime artifacts. The pip package contains source code and command-line entrypoints only. Data files, feature banks, and trained model weights must be stored outside the package and selected with `ECRECER_ROOT`.
+ECRECer separates the Python package from large runtime artifacts. The pip package contains source code and command-line entrypoints only. Data files, feature banks, and trained model weights are stored outside the package and prepared with `ecrecer-setup`, then selected with `ECRECER_ROOT`.
 
 ## Package Files
 
@@ -11,7 +11,7 @@ ECRECer separates the Python package from large runtime artifacts. The pip packa
 
 ## Artifact Root
 
-Set `ECRECER_ROOT` to a directory with this structure:
+Run `ecrecer-setup --target /path/to/ecrecer_artifacts`, then set `ECRECER_ROOT` to a directory with this structure:
 
 ```text
 ECRECER_ROOT/
@@ -24,7 +24,7 @@ ECRECER_ROOT/
   tmp/
 ```
 
-The package reads runtime files from `data/` and `model/`, then writes user outputs to the path provided with `-o`.
+The package reads runtime files from `data/` and `model/`, then writes user outputs to the path provided with `-o`. Use `ecrecer-setup --target /path/to/ecrecer_artifacts --with-hybrid` when hybrid mode should download the optional DIAMOND database.
 
 ## Example Command
 

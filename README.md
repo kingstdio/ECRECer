@@ -21,11 +21,50 @@ Install the Python package from a built wheel or PyPI package:
 python -m pip install ecrecer
 ```
 
-The package installs the Python runtime dependencies needed for local inference. It does not include large data files, UniProt snapshots, feature banks, DIAMOND databases, or trained model weights. Prepare those artifacts separately and point ECRECer at their root directory with `ECRECER_ROOT`.
+The package installs the Python runtime dependencies needed for local inference. Large runtime artifacts are prepared with `ecrecer-setup` after installation.
+
+## Step-by-step Local Pipeline
+
+1. Install ECRECer:
+
+```bash
+python -m pip install ecrecer
+```
+
+2. Download and prepare runtime artifacts. This creates the directory layout, installs the bundled label dictionaries and sample FASTA file, and downloads the trained models, UniProt cache, and ESM32 feature bank:
+
+```bash
+ecrecer-setup --target ~/ecrecer_artifacts
+```
+
+The default artifact download is about 4.2 GB. For hybrid mode, also download the DIAMOND database:
+
+```bash
+ecrecer-setup --target ~/ecrecer_artifacts --with-hybrid
+```
+
+3. Point ECRECer at the artifact directory:
+
+```bash
+export ECRECER_ROOT=~/ecrecer_artifacts
+```
+
+4. Run the bundled sample in recommendation mode:
+
+```bash
+ecrecer -i "$ECRECER_ROOT/data/sample_10.fasta" -o ecrecer_sample10.tsv -mode r -topk 5
+sed -n 1,5p ecrecer_sample10.tsv
+```
+
+5. Run your own FASTA file:
+
+```bash
+ecrecer -i input.fasta -o output.tsv -mode p -topk 5
+```
 
 ## Artifact Layout
 
-`ECRECER_ROOT` should contain the same runtime artifact layout used by the repository checkout:
+`ecrecer-setup` creates an `ECRECER_ROOT` directory with this runtime artifact layout:
 
 ```text
 ECRECER_ROOT/
@@ -49,25 +88,10 @@ Required production artifacts include:
 - `model/howmany_enzyme.h5`
 - `model/ec.h5`
 
-Preprocessed datasets are available from the public archive:
+Preprocessed benchmark datasets are available separately from the public archive:
 
 https://tibd-public-datasets.s3.amazonaws.com/ecrecer/ecrecer_datasets.zip
 
-Set the artifact root before running:
-
-```bash
-export ECRECER_ROOT=/path/to/ecrecer_artifacts
-```
-
-## Quick Start
-
-Use `data/sample_10.fasta` for a minimal local run when the artifact root is this repository checkout:
-
-```bash
-export ECRECER_ROOT=/path/to/ecrecer_artifacts
-ecrecer -i "$ECRECER_ROOT/data/sample_10.fasta" -o /tmp/ecrecer_sample10.tsv -mode p -topk 5
-sed -n '1,5p' /tmp/ecrecer_sample10.tsv
-```
 
 ## Command Line Usage
 

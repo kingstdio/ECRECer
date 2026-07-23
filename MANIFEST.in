@@ -3,6 +3,7 @@ include README.md
 recursive-include docs *.md
 include requirements/runtime-5090.txt
 recursive-include ecrecer *.py
+recursive-include ecrecer/assets *.h5 *.fasta
 recursive-include tools *.py
 include benchmark_common.py
 include config.py

@@ -42,18 +42,22 @@ dependencies = [
 
 [project.scripts]
 ecrecer = "ecrecer.cli:main"
+ecrecer-setup = "ecrecer.setup_artifacts:main"
 
 [project.urls]
 Homepage = "https://github.com/kingstdio/ECRECer"
 Repository = "https://github.com/kingstdio/ECRECer"
 
 [tool.setuptools]
-packages = ["ecrecer", "tools"]
+packages = ["ecrecer", "ecrecer.assets", "ecrecer.assets.dict", "tools"]
 py-modules = [
   "benchmark_common",
   "config",
   "production",
 ]
+
+[tool.setuptools.package-data]
+"ecrecer.assets" = ["sample_10.fasta", "dict/*.h5"]
 
 [tool.setuptools.dynamic]
 version = {attr = "ecrecer.__version__"}
