@@ -4,7 +4,7 @@ import os
 from sklearn.model_selection import train_test_split
 import benchmark_common as bcommon
 import config as cfg
-from keras.callbacks import TensorBoard, ModelCheckpoint
+from tools.keras_compat import TensorBoard, ModelCheckpoint
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 

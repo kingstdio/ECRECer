@@ -4,9 +4,7 @@ import os,string, random,joblib,sys
 from datetime import datetime
 import config as cfg
 from sklearn import preprocessing
-from keras.models import Model
-from keras.optimizers import Adam
-from keras.layers import Input, Dense, GRU, Bidirectional
+from tools.keras_compat import Model, Adam, Input, Dense, GRU, Bidirectional
 from tools import Attention
 
 

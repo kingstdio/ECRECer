@@ -13,7 +13,8 @@ import os
 
 
 # 1. 定义数据目录
-ROOTDIR= f'/hpcfs/fhome/shizhenkun/codebase/ECRECer/' #change to your own absolute data dir
+ROOTDIR = os.environ.get("ECRECER_ROOT", os.path.dirname(os.path.abspath(__file__)))
+ROOTDIR = os.path.abspath(ROOTDIR) + os.sep
 DATADIR = ROOTDIR +'data/'
 RESULTSDIR = ROOTDIR +'results/'
 MODELDIR = ROOTDIR +'model'

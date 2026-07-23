@@ -1,0 +1,36 @@
+include LICENSE
+include README.md
+recursive-include docs *.md
+include requirements/runtime-5090.txt
+recursive-include ecrecer *.py
+recursive-include tools *.py
+include benchmark_common.py
+include config.py
+include production.py
+
+prune .ai
+prune .agents
+prune .codex
+prune .github
+prune .pytest_cache
+prune __pycache__
+prune build
+prune data
+prune dist
+prune docs/_build
+prune model
+prune results
+prune tasks
+prune tests
+prune tmp
+prune tools/__pycache__
+
+exclude AGENTS.md
+exclude .DS_Store
+exclude ._.DS_Store
+exclude *.ipynb
+exclude *.pyc
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .DS_Store
+global-exclude ._*

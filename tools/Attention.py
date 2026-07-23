@@ -10,9 +10,8 @@ Copyright (c) 2022 by tibd, All Rights Reserved.
 '''
 
 # -*- coding: utf-8 -*-
-from keras import backend as K
-# from keras.engine.topology import Layer
-from keras.layers import Layer, InputSpec
+import tensorflow as tf
+from tools.keras_compat import Layer
 # from visualizer  import get_local
 
 # 利用Keras构造注意力机制层
@@ -42,16 +41,16 @@ class Attention(Layer):
     def call(self, x, mask=None):
         # input: (BATCH_SIZE, MAX_TIMESTEPS, EMBED_SIZE)
         # et: (BATCH_SIZE, MAX_TIMESTEPS, ATTENTION_SIZE)
-        et = K.tanh(K.dot(x, self.W) + self.b)
+        et = tf.tanh(tf.linalg.matmul(x, self.W) + self.b)
         # at: (BATCH_SIZE, MAX_TIMESTEPS)
-        at = K.softmax(K.squeeze(K.dot(et, self.u), axis=-1))
+        at = tf.nn.softmax(tf.squeeze(tf.linalg.matmul(et, self.u), axis=-1))
         if mask is not None:
-            at *= K.cast(mask, K.floatx())
+            at *= tf.cast(mask, x.dtype)
         # ot: (BATCH_SIZE, MAX_TIMESTEPS, EMBED_SIZE)
-        atx = K.expand_dims(at, axis=-1)
+        atx = tf.expand_dims(at, axis=-1)
         ot = atx * x
         # output: (BATCH_SIZE, EMBED_SIZE)
-        output = K.sum(ot, axis=1)
+        output = tf.reduce_sum(ot, axis=1)
         return output
 
     def compute_mask(self, input, input_mask=None):

@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ecrecer"
+dynamic = ["version"]
+description = "ECRECer enzyme commission number prediction and recommendation toolkit."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  {name = "Zhenkun Shi"}
+]
+keywords = ["bioinformatics", "enzyme", "EC number", "machine learning", "protein"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+  "biopython>=1.87",
+  "h5py>=3.14",
+  "joblib>=1.5",
+  "numpy>=2.0",
+  "pandarallel>=1.6",
+  "pandas>=3.0",
+  "pyarrow>=25.0",
+  "scikit-learn>=1.9",
+  "scipy>=1.17",
+  "tqdm>=4.68",
+]
+
+[project.optional-dependencies]
+runtime = [
+  "fair-esm>=2.0",
+  "tensorflow>=2.21",
+  "tf-keras>=2.21",
+  "torch>=2.13",
+  "xgboost>=3.2",
+]
+[project.scripts]
+ecrecer = "ecrecer.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/kingstdio/ECRECer"
+Repository = "https://github.com/kingstdio/ECRECer"
+
+[tool.setuptools]
+packages = ["ecrecer", "tools"]
+py-modules = [
+  "benchmark_common",
+  "config",
+  "production",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "ecrecer.__version__"}
